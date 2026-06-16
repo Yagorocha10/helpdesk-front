@@ -1,0 +1,25 @@
+<div class="ged-container">
+  
+  <div class="page-header">
+    <h2>Pastas de Documentos</h2>
+    <button mat-flat-button color="primary" class="btn-create" (click)="openCreateFolderDialog()">
+      <mat-icon>create_new_folder</mat-icon>
+      Nova Pasta
+    </button>
+  </div>
+
+  <div class="folders-grid">
+    
+    <mat-card class="folder-card" *ngFor="let folder of folders" (click)="goToFolder(folder.id)">
+      <mat-card-content class="folder-content">
+        <mat-icon class="folder-icon">folder</mat-icon>
+        <div class="folder-info">
+          <span class="folder-name">{{ folder.name }}</span>
+          <span class="folder-count">{{ folder.fileCount }} arquivos</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+  </div>
+
+</div>

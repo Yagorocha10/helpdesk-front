@@ -1,0 +1,21 @@
+<mat-toolbar color="primary" class="header-toolbar">
+  <div class="logo-container">
+    <div class="logo-box">
+      <mat-icon>description</mat-icon>
+    </div>
+    <div class="brand-text">
+      <span class="title">BELÉM DIGITAL Docs</span>
+      <span class="subtitle">Gestão Centralizada de Documentos</span>
+    </div>
+  </div>
+
+  <div class="nav-links">
+    <a mat-button routerLink="/dashboard" routerLinkActive="active-link">Dashboard</a>
+    <a mat-button routerLink="/documentos" routerLinkActive="active-link">Nova Pasta</a>
+    <a mat-button routerLink="/auditoria" routerLinkActive="active-link">Auditoria</a>
+  </div>
+</mat-toolbar>
+
+<main class="content-container">
+  <router-outlet></router-outlet>
+</main>

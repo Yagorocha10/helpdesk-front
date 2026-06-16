@@ -1,0 +1,80 @@
+.ged-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #212529;
+    margin: 0;
+  }
+
+  .btn-create {
+    background-color: #0d6efd;
+    font-weight: 500;
+    border-radius: 8px;
+    padding: 0 1.25rem;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.folders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.folder-card {
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+    border-color: #0d6efd;
+  }
+
+  .folder-content {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.25rem !important;
+  }
+}
+
+.folder-icon {
+  font-size: 40px;
+  width: 40px;
+  height: 40px;
+  color: #ffca28; // Cor amarela padrão de pasta comercial
+}
+
+.folder-info {
+  display: flex;
+  flex-direction: column;
+
+  .folder-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #212529;
+  }
+
+  .folder-count {
+    font-size: 0.825rem;
+    color: #6c757d;
+    margin-top: 2px;
+  }
+}

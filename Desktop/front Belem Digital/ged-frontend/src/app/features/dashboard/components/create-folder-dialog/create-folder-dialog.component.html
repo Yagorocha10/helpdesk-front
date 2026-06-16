@@ -1,0 +1,20 @@
+<h2 mat-dialog-title>Criar Nova Pasta</h2>
+
+<mat-dialog-content [formGroup]="folderForm">
+  <p>Insira o nome da pasta que deseja criar para organizar seus documentos.</p>
+  
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Nome da Pasta</mat-label>
+    <input matInput formControlName="name" placeholder="Ex: Contratos 2026" autocomplete="off">
+    <mat-error *ngIf="folderForm.get('name')?.hasError('required')">
+      O nome da pasta é obrigatório.
+    </mat-error>
+  </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancelar</button>
+  <button mat-flat-button color="primary" [disabled]="folderForm.invalid" (click)="onSave()">
+    Criar Pasta
+  </button>
+</mat-dialog-actions>

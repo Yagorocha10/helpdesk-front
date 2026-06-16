@@ -1,0 +1,11 @@
+<div class="ged-container" *ngIf="folder">
+  <div class="page-header">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <button mat-icon-button (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h2>{{ folder.name }}</h2>
+    </div>
+  </div>
+  <p style="margin-top: 1rem; color: #6c757d;">Esta pasta possui {{ folder.fileCount }} arquivos.</p>
+</div>

@@ -1,0 +1,204 @@
+.ged-container {
+  padding: 24px;
+  background-color: #ffffff;
+  min-height: 100vh;
+}
+
+// Cabeçalho Interno
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  .title-block {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .btn-back {
+      color: #64748b;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 600;
+      color: #0f172a;
+    }
+  }
+
+  .actions-block {
+    display: flex;
+    gap: 10px;
+
+    .btn-subfolder {
+      border-color: #e2e8f0;
+      color: #334155;
+      font-weight: 500;
+      border-radius: 8px;
+    }
+
+    .btn-upload {
+      border-radius: 8px;
+      font-weight: 500;
+      background-color: #1e293b;
+    }
+  }
+}
+
+// Input de Subpasta Estilizado
+.custom-subfolder-input-box {
+  display: flex;
+  gap: 10px;
+  max-width: 400px;
+  margin-bottom: 24px;
+  background: #ffffff;
+  
+  input {
+    flex: 1;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    outline: none;
+    font-size: 14px;
+    color: #334155;
+    
+    &::placeholder { color: #94a3b8; }
+  }
+
+  button {
+    border-radius: 8px;
+  }
+}
+
+// Grid de Subpastas (Reutilizando a identidade)
+.subfolders-section {
+  margin-bottom: 24px;
+}
+
+.divider-space {
+  height: 1px;
+  background-color: #f1f5f9;
+  margin: 24px 0;
+}
+
+.custom-folders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.custom-folder-card.mini {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px;
+  cursor: pointer;
+  min-height: auto;
+  transition: border-color 0.2s;
+
+  &:hover { border-color: #cbd5e1; }
+
+  .card-row-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    .folder-icon-wrapper {
+      background-color: #f1f5f9;
+      border-radius: 6px;
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      mat-icon { color: #1e293b; font-size: 18px; width: 18px; height: 18px; }
+    }
+
+    .folder-title-block .folder-title {
+      font-size: 14px;
+      font-weight: 500;
+    }
+  }
+}
+
+.section-indicator {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+// Tabela Limpa
+.custom-table-wrapper {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.clean-table {
+  width: 100%;
+  box-shadow: none !important;
+
+  tr.mat-header-row {
+    height: 48px;
+    background-color: #f8fafc;
+  }
+
+  th.mat-header-cell {
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 500;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  tr.mat-row {
+    height: 48px;
+    &:hover { background-color: #f8fafc; }
+  }
+
+  td.mat-cell {
+    color: #334155;
+    font-size: 14px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .file-icon {
+    color: #64748b;
+    vertical-align: middle;
+  }
+
+  .doc-name-cell {
+    font-weight: 500;
+    color: #0f172a;
+  }
+
+  .badge-type {
+    background-color: #f1f5f9;
+    color: #475569;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .text-right { text-align: right; }
+
+  .action-btn {
+    color: #94a3b8;
+    transition: color 0.2s;
+    
+    &:hover.download { color: #0284c7; }
+    &:hover.delete { color: #ef4444; }
+  }
+
+  .empty-table-message {
+    padding: 32px;
+    text-align: center;
+    color: #64748b;
+    font-style: italic;
+  }
+}

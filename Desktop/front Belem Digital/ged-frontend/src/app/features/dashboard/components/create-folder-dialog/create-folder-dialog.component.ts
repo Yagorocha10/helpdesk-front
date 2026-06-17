@@ -6,7 +6,7 @@ import { MatDialogRef } from '@angular/material/dialog';
   selector: 'app-create-folder-dialog',
   templateUrl: './create-folder-dialog.component.html',
   styleUrls: ['./create-folder-dialog.component.scss']
-})
+  })
 export class CreateFolderDialogComponent implements OnInit {
   folderForm!: FormGroup;
 
@@ -17,17 +17,18 @@ export class CreateFolderDialogComponent implements OnInit {
 
   ngOnInit(): void {
     this.folderForm = this.fb.group({
-      name: ['', Validators.required]
+      name: ['', [Validators.required, Validators.minLength(3)]]
     });
+  }
+
+  onSubmit(): void {
+    if (this.folderForm.valid) {
+      // Envia o objeto com o nome de volta para quem abriu o dialog
+      this.dialogRef.close(this.folderForm.value);
+    }
   }
 
   onCancel(): void {
     this.dialogRef.close();
-  }
-
-  onSave(): void {
-    if (this.folderForm.valid) {
-      this.dialogRef.close(this.folderForm.value.name);
-    }
   }
 }

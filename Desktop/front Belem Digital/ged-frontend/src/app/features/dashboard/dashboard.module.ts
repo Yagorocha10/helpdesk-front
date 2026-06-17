@@ -1,37 +1,44 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms'; 
-import { RouterModule } from '@angular/router'; // IMPORTANTE: Adicionado para o Router funcionar
+import { ReactiveFormsModule, FormsModule } from '@angular/forms'; // FormsModule adicionado aqui
+import { SharedModule } from '../../shared/shared.module';
+import { DashboardRoutingModule } from './dashboard-routing.module';
 
+// Componentes do Dashboard
+import { DashboardHomeComponent } from './pages/dashboard-home/dashboard-home.component';
+import { FolderDetailComponent } from './pages/folder-detail/folder-detail.component';
+import { CreateFolderDialogComponent } from './components/create-folder-dialog/create-folder-dialog.component';
+
+// Módulos do Angular Material necessários
+import { MatTableModule } from '@angular/material/table';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatCardModule } from '@angular/material/card';
-
-import { DashboardRoutingModule } from './dashboard-routing.module';
-import { DashboardHomeComponent } from './pages/dashboard-home/dashboard-home.component';
-import { CreateFolderDialogComponent } from './components/create-folder-dialog/create-folder-dialog.component';
-import { FolderDetailComponent } from './pages/folder-detail/folder-detail.component';
+import { FolderListComponent } from './components/folder-list/folder-list.component';
 
 @NgModule({
   declarations: [
     DashboardHomeComponent,
+    FolderDetailComponent,
     CreateFolderDialogComponent,
-    FolderDetailComponent
+    FolderListComponent
   ],
   imports: [
     CommonModule,
-    DashboardRoutingModule,
     ReactiveFormsModule,
-    RouterModule, // IMPORTANTE: Declarado aqui
+    FormsModule, // Adicionado aqui para liberar o [(ngModel)]
+    SharedModule,
+    DashboardRoutingModule,
+    MatTableModule,
+    MatIconModule,
+    MatButtonModule,
+    MatDividerModule,
     MatDialogModule,
     MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatCardModule
+    MatInputModule
   ]
 })
 export class DashboardModule { }

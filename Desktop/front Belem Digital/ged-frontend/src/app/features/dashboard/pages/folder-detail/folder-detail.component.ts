@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { DocumentService, Folder } from 'src/app/core/services/document.service';
+import { ActivatedRoute } from '@angular/router';
+import { DocumentService } from '../../../../core/services/document.service';
+import { Folder } from '../../../../core/models/folder.model';
+import { DocumentFile } from '../../../../core/models/document-file.model';
 
 @Component({
   selector: 'app-folder-detail',
@@ -8,26 +10,76 @@ import { DocumentService, Folder } from 'src/app/core/services/document.service'
   styleUrls: ['./folder-detail.component.scss']
 })
 export class FolderDetailComponent implements OnInit {
-  folder: Folder | undefined;
+  folderId!: number;
+  currentFolder?: Folder;
+  documents: DocumentFile[] = [];
+  subFolders: Folder[] = [];
+  displayedColumns: string[] = ['icon', 'name', 'type', 'actions'];
+  
+  newSubFolderName = '';
+  showSubFolderInput = false;
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
     private documentService: DocumentService
   ) {}
 
   ngOnInit(): void {
-    // Pega o ID da rota e converte para número
-    const folderId = Number(this.route.snapshot.paramMap.get('id'));
-    this.folder = this.documentService.getFolderById(folderId);
+    this.route.paramMap.subscribe(params => {
+      this.folderId = Number(params.get('id'));
+      this.loadData();
+    });
+  }
 
-    // Se a pasta não existir, volta para o dashboard
-    if (!this.folder) {
-      this.goBack();
+  loadData(): void {
+    this.documentService.getFolderById(this.folderId).subscribe(f => this.currentFolder = f);
+    
+    this.documentService.getDocumentsByFolder(this.folderId).subscribe(data => {
+      this.documents = [...data];
+    });
+
+    this.documentService.getFolders(this.folderId).subscribe(subs => {
+      this.subFolders = subs;
+    });
+  }
+
+  onFileSelected(event: any): void {
+    const file: File = event.target.files[0];
+    if (file) {
+      this.documentService.uploadDocument(this.folderId, file).subscribe(() => {
+        this.loadData();
+        event.target.value = '';
+      });
     }
   }
 
-  goBack(): void {
-    this.router.navigate(['/dashboard']);
+  createSubFolder(): void {
+    if (this.newSubFolderName.trim()) {
+      this.documentService.addFolder(this.newSubFolderName, this.folderId).subscribe(() => {
+        this.newSubFolderName = '';
+        this.showSubFolderInput = false;
+        this.loadData();
+      });
+    }
+  }
+
+  downloadFile(doc: DocumentFile): void {
+    const blob = new Blob(['Conteúdo simulado do arquivo'], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = doc.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }
+
+  deleteFile(docId: number): void {
+    if (confirm('Tem certeza que deseja excluir este documento?')) {
+      this.documentService.deleteDocument(docId).subscribe(() => {
+        this.loadData();
+      });
+    }
   }
 }

@@ -1,11 +1,91 @@
-<div class="ged-container" *ngIf="folder">
-  <div class="page-header">
-    <div style="display: flex; align-items: center; gap: 1rem;">
-      <button mat-icon-button (click)="goBack()">
+<div class="ged-container">
+  
+  <div class="detail-header">
+    <div class="title-block">
+      <button mat-icon-button routerLink="/dashboard" class="btn-back">
         <mat-icon>arrow_back</mat-icon>
       </button>
-      <h2>{{ folder.name }}</h2>
+      <h2>{{ currentFolder?.name || 'Documentos' }}</h2>
+    </div>
+    
+    <div class="actions-block">
+      <button mat-stroked-button class="btn-subfolder" (click)="showSubFolderInput = !showSubFolderInput">
+        <mat-icon>create_new_folder</mat-icon>
+        Nova Subpasta
+      </button>
+      <button mat-flat-button color="primary" class="btn-upload" (click)="fileInput.click()">
+        <mat-icon>cloud_upload</mat-icon>
+        Upload de Arquivo
+      </button>
+      <input #fileInput type="file" (change)="onFileSelected($event)" style="display: none;" />
     </div>
   </div>
-  <p style="margin-top: 1rem; color: #6c757d;">Esta pasta possui {{ folder.fileCount }} arquivos.</p>
+
+  <div *ngIf="showSubFolderInput" class="custom-subfolder-input-box">
+    <input type="text" [(ngModel)]="newSubFolderName" (keyup.enter)="createSubFolder()" placeholder="Nome da subpasta...">
+    <button mat-flat-button color="primary" (click)="createSubFolder()">Criar</button>
+  </div>
+
+  <div *ngIf="subFolders.length > 0" class="subfolders-section">
+    <h4 class="section-indicator">Subpastas</h4>
+    <div class="custom-folders-grid">
+      <div class="custom-folder-card mini" *ngFor="let sub of subFolders" [routerLink]="['/dashboard/folder', sub.id]">
+        <div class="card-row-top">
+          <div class="folder-icon-wrapper">
+            <mat-icon>folder</mat-icon>
+          </div>
+          <div class="folder-title-block">
+            <h3 class="folder-title">{{ sub.name }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider-space" *ngIf="subFolders.length > 0"></div>
+
+  <h4 class="section-indicator">Arquivos</h4>
+  <div class="custom-table-wrapper">
+    <table mat-table [dataSource]="documents" class="clean-table">
+      
+      <ng-container matColumnDef="icon">
+        <th mat-header-cell *matHeaderCellDef width="40"></th>
+        <td mat-cell *matCellDef="let doc">
+          <mat-icon class="file-icon">description</mat-icon>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef> Nome do arquivo </th>
+        <td mat-cell *matCellDef="let doc" class="doc-name-cell"> {{ doc.name }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="type">
+        <th mat-header-cell *matHeaderCellDef width="100"> Tipo </th>
+        <td mat-cell *matCellDef="let doc"> <span class="badge-type">{{ doc.type }}</span> </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef width="100" class="text-right"></th>
+        <td mat-cell *matCellDef="let doc" class="text-right">
+          <button mat-icon-button class="action-btn download" (click)="downloadFile(doc)" title="Baixar">
+            <mat-icon>download</mat-icon>
+          </button>
+          <button mat-icon-button class="action-btn delete" (click)="deleteFile(doc.id)" title="Excluir">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell empty-table-message" colspan="4">
+          Nenhum documento armazenado nesta pasta.
+        </td>
+      </tr>
+    </table>
+  </div>
+
 </div>

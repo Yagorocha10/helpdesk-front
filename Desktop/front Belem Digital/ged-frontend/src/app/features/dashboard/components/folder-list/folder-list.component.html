@@ -1,0 +1,19 @@
+<div class="custom-folders-grid">
+  <div class="custom-folder-card" *ngFor="let folder of folders" (click)="goToFolder(folder.id)">
+    <div class="card-row-top">
+      <div class="folder-icon-wrapper">
+        <mat-icon>folder</mat-icon>
+      </div>
+      <div class="folder-title-block">
+        <h3 class="folder-title">{{ folder.name }}</h3>
+      </div>
+    </div>
+    
+    <div class="card-row-bottom">
+      <div class="meta-item">
+        <mat-icon>description</mat-icon>
+        <span>{{ folder.fileCount }} arquivos</span>
+      </div>
+    </div>
+  </div>
+</div>

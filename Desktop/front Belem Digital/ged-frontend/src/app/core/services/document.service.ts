@@ -1,97 +1,154 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { map, Observable, of, tap, throwError } from 'rxjs';
 import { Folder } from '../models/folder.model';
 import { DocumentFile } from '../models/document-file.model';
 import { SearchResult } from '../models/search-result.model';
+
+interface FolderResponseDTO {
+  id: number;
+  nome: string;
+  dataCriacao: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class DocumentService {
+  private readonly foldersUrl = 'http://localhost:8080/folders';
+  private readonly documentsStorageKey = 'ged-documents';
 
-  // Banco de dados simulado em memória usando os Models oficiais
-  private mockFolders: Folder[] = [
-    { id: 1, name: 'Contratos', fileCount: 0, parentId: null },
-    { id: 2, name: 'Recursos Humanos', fileCount: 0, parentId: null },
-    { id: 3, name: 'Financeiro', fileCount: 0, parentId: null },
-    { id: 4, name: 'Projetos', fileCount: 0, parentId: null }
-  ];
+  constructor(private http: HttpClient) {}
 
-  private mockDocuments: DocumentFile[] = [];
-
-  constructor() {}
-
-  // Listar pastas filtrando por pai (null para a raiz)
   getFolders(parentId: number | null = null): Observable<Folder[]> {
-    return of(this.mockFolders.filter(f => f.parentId === parentId));
+    if (parentId !== null) {
+      return of([]);
+    }
+
+    return this.http.get<FolderResponseDTO[]>(this.foldersUrl).pipe(
+      map(folders => folders.map(folder => this.mapFolder(folder)))
+    );
   }
 
-  // Buscar uma pasta específica por ID
   getFolderById(id: number): Observable<Folder | undefined> {
-    return of(this.mockFolders.find(f => f.id === id));
+    return this.http.get<FolderResponseDTO>(`${this.foldersUrl}/${id}`).pipe(
+      map(folder => this.mapFolder(folder))
+    );
   }
 
-  // Criar uma nova pasta ou subpasta
   addFolder(name: string, parentId: number | null = null): Observable<Folder> {
-    const newFolder: Folder = {
-      id: Math.floor(Math.random() * 10000),
-      name: name,
-      fileCount: 0,
-      parentId: parentId
-    };
-    this.mockFolders.push(newFolder);
-    return of(newFolder);
+    if (parentId !== null) {
+      return throwError(() => new Error('O backend ainda nao suporta subpastas.'));
+    }
+
+    return this.http.post<FolderResponseDTO>(this.foldersUrl, { nome: name }).pipe(
+      map(folder => this.mapFolder(folder))
+    );
   }
 
-  // Listar documentos de uma pasta específica
+  deleteFolder(folderId: number): Observable<void> {
+    return this.http.delete<void>(`${this.foldersUrl}/${folderId}`).pipe(
+      tap(() => {
+        const docs = this.loadDocuments().filter(doc => doc.folderId !== folderId);
+        this.saveDocuments(docs);
+      })
+    );
+  }
+
   getDocumentsByFolder(folderId: number): Observable<DocumentFile[]> {
-    return of(this.mockDocuments.filter(d => d.folderId === folderId));
+    return of(this.loadDocuments().filter(doc => doc.folderId === folderId));
   }
 
-  // Simular upload de arquivo
   uploadDocument(folderId: number, file: File): Observable<DocumentFile> {
-    const newDoc: DocumentFile = {
-      id: Math.floor(Math.random() * 10000),
-      name: file.name,
-      type: file.name.split('.').pop()?.toUpperCase() || 'UNKNOWN',
-      folderId: folderId
-    };
-    
-    this.mockDocuments.push(newDoc);
-    
-    // Atualiza o contador de arquivos da pasta correspondente
-    const folder = this.mockFolders.find(f => f.id === folderId);
-    if (folder) {
-      folder.fileCount = this.mockDocuments.filter(d => d.folderId === folderId).length;
-    }
+    return new Observable<DocumentFile>(observer => {
+      const reader = new FileReader();
 
-    return of(newDoc);
+      reader.onload = () => {
+        const docs = this.loadDocuments();
+        const newDoc: DocumentFile = {
+          id: Date.now(),
+          name: file.name,
+          type: file.name.split('.').pop()?.toUpperCase() || 'UNKNOWN',
+          folderId,
+          mimeType: file.type || 'application/octet-stream',
+          size: file.size,
+          content: reader.result as string,
+          createdAt: new Date().toISOString()
+        };
+
+        docs.push(newDoc);
+        this.saveDocuments(docs);
+        observer.next(newDoc);
+        observer.complete();
+      };
+
+      reader.onerror = () => {
+        observer.error(reader.error);
+      };
+
+      reader.readAsDataURL(file);
+    });
   }
 
-  // Remover arquivo
   deleteDocument(docId: number): Observable<void> {
-    const index = this.mockDocuments.findIndex(d => d.id === docId);
-    if (index !== -1) {
-      const folderId = this.mockDocuments[index].folderId;
-      this.mockDocuments.splice(index, 1);
-      
-      // Atualiza o contador da pasta após a exclusão
-      const folder = this.mockFolders.find(f => f.id === folderId);
-      if (folder) {
-        folder.fileCount = this.mockDocuments.filter(d => d.folderId === folderId).length;
-      }
-    }
+    const docs = this.loadDocuments().filter(doc => doc.id !== docId);
+    this.saveDocuments(docs);
+
     return of(void 0);
   }
 
-  // Mecanismo de busca global utilizando a interface SearchResult
+  downloadDocument(doc: DocumentFile): void {
+    const storedDoc = this.loadDocuments().find(item => item.id === doc.id);
+    if (!storedDoc?.content) {
+      throw new Error('Arquivo nao encontrado para download.');
+    }
+
+    const link = document.createElement('a');
+    link.href = storedDoc.content;
+    link.download = storedDoc.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   search(query: string): Observable<SearchResult> {
     const txt = query.toLowerCase().trim();
     if (!txt) return of({ folders: [], documents: [] });
 
-    const filteredFolders = this.mockFolders.filter(f => f.name.toLowerCase().includes(txt));
-    const filteredDocs = this.mockDocuments.filter(d => d.name.toLowerCase().includes(txt));
+    return this.getFolders().pipe(
+      map(folders => ({
+        folders: folders.filter(folder => folder.name.toLowerCase().includes(txt)),
+        documents: this.loadDocuments().filter(doc => doc.name.toLowerCase().includes(txt))
+      }))
+    );
+  }
 
-    return of({ folders: filteredFolders, documents: filteredDocs });
+  private mapFolder(folder: FolderResponseDTO): Folder {
+    const fileCount = this.loadDocuments().filter(doc => doc.folderId === folder.id).length;
+
+    return {
+      id: folder.id,
+      name: folder.nome,
+      fileCount,
+      parentId: null,
+      createdAt: folder.dataCriacao
+    };
+  }
+
+  private loadDocuments(): DocumentFile[] {
+    const raw = localStorage.getItem(this.documentsStorageKey);
+    if (!raw) {
+      return [];
+    }
+
+    try {
+      return JSON.parse(raw) as DocumentFile[];
+    } catch {
+      return [];
+    }
+  }
+
+  private saveDocuments(documents: DocumentFile[]): void {
+    localStorage.setItem(this.documentsStorageKey, JSON.stringify(documents));
   }
 }

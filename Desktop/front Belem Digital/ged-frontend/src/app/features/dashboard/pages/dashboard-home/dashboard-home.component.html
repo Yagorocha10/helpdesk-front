@@ -17,6 +17,9 @@
 
   <div *ngIf="!isSearching" class="folders-grid">
     <mat-card class="folder-card" *ngFor="let folder of folders" (click)="goToFolder(folder.id)">
+      <button mat-icon-button class="folder-delete-btn" title="Excluir pasta" (click)="deleteFolder($event, folder)">
+        <mat-icon>delete</mat-icon>
+      </button>
       <mat-card-content class="folder-content">
         <mat-icon class="folder-icon">folder</mat-icon>
         <div class="folder-info">
@@ -36,6 +39,9 @@
       <h3>Pastas Encontradas</h3>
       <div class="folders-grid">
         <mat-card class="folder-card" *ngFor="let folder of searchResults.folders" (click)="goToFolder(folder.id)">
+          <button mat-icon-button class="folder-delete-btn" title="Excluir pasta" (click)="deleteFolder($event, folder)">
+            <mat-icon>delete</mat-icon>
+          </button>
           <mat-card-content class="folder-content">
             <mat-icon class="folder-icon">folder</mat-icon>
             <div class="folder-info">

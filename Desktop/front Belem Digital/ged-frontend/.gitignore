@@ -10,6 +10,9 @@
 /node_modules
 npm-debug.log
 yarn-error.log
+ng-serve.*.log
+ng-serve*.log
+backend*.log
 
 # IDEs and editors
 .idea/
@@ -36,6 +39,7 @@ yarn-error.log
 /libpeerconnection.log
 testem.log
 /typings
+.backend-analysis/
 
 # System files
 .DS_Store

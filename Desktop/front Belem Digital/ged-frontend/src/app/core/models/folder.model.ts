@@ -3,4 +3,5 @@ export interface Folder {
   name: string;
   fileCount: number;
   parentId?: number | null;
+  createdAt?: string;
 }

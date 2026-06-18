@@ -35,6 +35,7 @@
 }
 
 .folder-card {
+  position: relative;
   border-radius: 12px;
   border: 1px solid #e0e0e0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
@@ -53,6 +54,24 @@
     gap: 1.25rem;
     padding: 1.25rem !important;
   }
+}
+
+.folder-delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: #dc3545;
+  opacity: 0;
+  transition: opacity 0.2s, background-color 0.2s;
+  z-index: 2;
+
+  &:hover {
+    background-color: #f8d7da;
+  }
+}
+
+.folder-card:hover .folder-delete-btn {
+  opacity: 1;
 }
 
 .folder-icon {

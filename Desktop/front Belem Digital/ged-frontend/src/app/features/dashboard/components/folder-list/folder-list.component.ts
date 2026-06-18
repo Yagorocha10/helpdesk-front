@@ -9,7 +9,9 @@ import { Folder } from '../../../../core/models/folder.model';
   styleUrls: ['./folder-list.component.scss']
 })
 export class FolderListComponent implements OnInit {
+
   folders: Folder[] = [];
+  searchTerm = '';
 
   constructor(
     private folderService: FolderService,
@@ -17,17 +19,52 @@ export class FolderListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadRootFolders();
+    this.loadFolders();
   }
 
-  loadRootFolders(): void {
-    // Busca apenas as pastas da raiz (parentId = null)
-    this.folderService.getFolders(null).subscribe(data => {
-      this.folders = data;
+  loadFolders(): void {
+    this.folderService.getFolders().subscribe({
+      next: (folders) => {
+        this.folders = folders;
+      },
+      error: (err) => {
+        console.error('Erro ao carregar pastas:', err);
+      }
     });
   }
 
-  goToFolder(id: number): void {
-    this.router.navigate(['/dashboard/folder', id]);
+  createFolder(name: string): void {
+    if (!name.trim()) {
+      return;
+    }
+
+    this.folderService.addFolder(name).subscribe({
+      next: () => {
+        this.loadFolders();
+      },
+      error: (err) => {
+        console.error('Erro ao criar pasta:', err);
+      }
+    });
+  }
+
+  search(): void {
+    if (!this.searchTerm.trim()) {
+      this.loadFolders();
+      return;
+    }
+
+    this.folderService.searchFolders(this.searchTerm).subscribe({
+      next: (folders) => {
+        this.folders = folders;
+      },
+      error: (err) => {
+        console.error('Erro na pesquisa:', err);
+      }
+    });
+  }
+
+  goToFolder(folderId: number): void {
+    this.router.navigate(['/dashboard/folder', folderId]);
   }
 }

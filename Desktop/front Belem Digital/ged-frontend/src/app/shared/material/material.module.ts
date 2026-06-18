@@ -6,6 +6,10 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatTableModule } from '@angular/material/table';
 
 const MATERIAL_MODULES = [
   MatCardModule,
@@ -14,7 +18,11 @@ const MATERIAL_MODULES = [
   MatToolbarModule,
   MatSidenavModule,
   MatListModule,
-  MatProgressBarModule
+  MatProgressBarModule,
+  MatFormFieldModule,
+  MatInputModule,
+  MatDialogModule,
+  MatTableModule
 ];
 
 @NgModule({

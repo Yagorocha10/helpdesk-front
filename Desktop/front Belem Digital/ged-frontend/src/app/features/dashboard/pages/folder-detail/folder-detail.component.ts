@@ -15,7 +15,7 @@ export class FolderDetailComponent implements OnInit {
   documents: DocumentFile[] = [];
   subFolders: Folder[] = [];
   displayedColumns: string[] = ['icon', 'name', 'type', 'actions'];
-  
+
   newSubFolderName = '';
   showSubFolderInput = false;
 
@@ -32,8 +32,11 @@ export class FolderDetailComponent implements OnInit {
   }
 
   loadData(): void {
-    this.documentService.getFolderById(this.folderId).subscribe(f => this.currentFolder = f);
-    
+    this.documentService.getFolderById(this.folderId).subscribe({
+      next: folder => this.currentFolder = folder,
+      error: err => console.error('Erro ao carregar pasta:', err)
+    });
+
     this.documentService.getDocumentsByFolder(this.folderId).subscribe(data => {
       this.documents = [...data];
     });
@@ -43,36 +46,50 @@ export class FolderDetailComponent implements OnInit {
     });
   }
 
-  onFileSelected(event: any): void {
-    const file: File = event.target.files[0];
-    if (file) {
-      this.documentService.uploadDocument(this.folderId, file).subscribe(() => {
-        this.loadData();
-        event.target.value = '';
-      });
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) {
+      return;
     }
+
+    this.documentService.uploadDocument(this.folderId, file).subscribe({
+      next: () => {
+        this.loadData();
+        input.value = '';
+      },
+      error: err => {
+        console.error('Erro ao enviar arquivo:', err);
+        alert('Nao foi possivel enviar o arquivo.');
+        input.value = '';
+      }
+    });
   }
 
   createSubFolder(): void {
     if (this.newSubFolderName.trim()) {
-      this.documentService.addFolder(this.newSubFolderName, this.folderId).subscribe(() => {
-        this.newSubFolderName = '';
-        this.showSubFolderInput = false;
-        this.loadData();
+      this.documentService.addFolder(this.newSubFolderName, this.folderId).subscribe({
+        next: () => {
+          this.newSubFolderName = '';
+          this.showSubFolderInput = false;
+          this.loadData();
+        },
+        error: err => {
+          console.error('Erro ao criar subpasta:', err);
+          alert('O backend ainda nao possui suporte para subpastas.');
+        }
       });
     }
   }
 
   downloadFile(doc: DocumentFile): void {
-    const blob = new Blob(['Conteúdo simulado do arquivo'], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = doc.name;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+    try {
+      this.documentService.downloadDocument(doc);
+    } catch (err) {
+      console.error('Erro ao baixar arquivo:', err);
+      alert('Nao foi possivel baixar o arquivo.');
+    }
   }
 
   deleteFile(docId: number): void {

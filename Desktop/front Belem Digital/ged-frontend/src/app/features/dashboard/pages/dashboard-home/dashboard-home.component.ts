@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
 import { DocumentFile } from 'src/app/core/models/document-file.model';
 import { Folder } from 'src/app/core/models/folder.model';
 import { SearchResult } from 'src/app/core/models/search-result.model';
@@ -17,6 +18,8 @@ export class DashboardHomeComponent implements OnInit {
   searchResults: SearchResult = { folders: [], documents: [] };
   searchQuery = '';
   isSearching = false;
+  deletingFolderIds = new Set<number>();
+  deletingDocumentIds = new Set<number>();
 
   constructor(
     private dialog: MatDialog,
@@ -80,24 +83,31 @@ export class DashboardHomeComponent implements OnInit {
     });
   }
 
-  deleteFolder(event: MouseEvent, folder: Folder): void {
+  deleteFolder(event: Event, folder: Folder): void {
+    event.preventDefault();
     event.stopPropagation();
 
-    if (!confirm(`Tem certeza que deseja excluir a pasta "${folder.name}"?`)) {
+    const folderId = Number(folder.id);
+    if (this.deletingFolderIds.has(folderId)) {
       return;
     }
 
-    this.documentService.deleteFolder(folder.id).subscribe({
+    this.deletingFolderIds.add(folderId);
+
+    this.documentService.deleteFolder(folderId).pipe(
+      finalize(() => this.deletingFolderIds.delete(folderId))
+    ).subscribe({
       next: () => {
-        this.folders = this.folders.filter(item => item.id !== folder.id);
+        this.folders = this.folders.filter(item => String(item.id) !== String(folderId));
         this.searchResults = {
-          folders: this.searchResults.folders.filter(item => item.id !== folder.id),
-          documents: this.searchResults.documents.filter(item => item.folderId !== folder.id)
+          folders: this.searchResults.folders.filter(item => String(item.id) !== String(folderId)),
+          documents: this.searchResults.documents.filter(item => String(item.folderId) !== String(folderId))
         };
+        this.isSearching && this.searchQuery.trim() ? this.onSearch() : this.loadFolders();
       },
       error: err => {
         console.error('Erro ao excluir pasta:', err);
-        alert('Nao foi possivel excluir a pasta.');
+        alert(`Nao foi possivel excluir a pasta. Status: ${err.status || 'sem resposta do backend'}.`);
       }
     });
   }
@@ -113,5 +123,42 @@ export class DashboardHomeComponent implements OnInit {
       console.error('Erro ao baixar arquivo:', err);
       alert('Nao foi possivel baixar o arquivo.');
     }
+  }
+
+  viewFile(doc: DocumentFile): void {
+    try {
+      this.documentService.viewDocument(doc);
+    } catch (err) {
+      console.error('Erro ao visualizar arquivo:', err);
+      alert('Nao foi possivel visualizar o arquivo.');
+    }
+  }
+
+  deleteFile(event: Event, doc: DocumentFile): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const docId = Number(doc.id);
+    if (this.deletingDocumentIds.has(docId)) {
+      return;
+    }
+
+    this.deletingDocumentIds.add(docId);
+
+    this.documentService.deleteDocument(docId).pipe(
+      finalize(() => this.deletingDocumentIds.delete(docId))
+    ).subscribe({
+      next: () => {
+        this.searchResults = {
+          folders: this.searchResults.folders,
+          documents: this.searchResults.documents.filter(item => String(item.id) !== String(docId))
+        };
+        this.loadFolders();
+      },
+      error: err => {
+        console.error('Erro ao excluir arquivo:', err);
+        alert(`Nao foi possivel excluir o arquivo. Status: ${err.status || 'sem resposta do backend'}.`);
+      }
+    });
   }
 }

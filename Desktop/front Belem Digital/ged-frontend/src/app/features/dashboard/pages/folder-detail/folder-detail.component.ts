@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { finalize } from 'rxjs';
 import { DocumentService } from '../../../../core/services/document.service';
 import { Folder } from '../../../../core/models/folder.model';
 import { DocumentFile } from '../../../../core/models/document-file.model';
@@ -18,6 +19,8 @@ export class FolderDetailComponent implements OnInit {
 
   newSubFolderName = '';
   showSubFolderInput = false;
+  subFolderMessage = '';
+  deletingDocumentIds = new Set<number>();
 
   constructor(
     private route: ActivatedRoute,
@@ -83,6 +86,12 @@ export class FolderDetailComponent implements OnInit {
     }
   }
 
+  showSubFolderUnavailableMessage(): void {
+    this.showSubFolderInput = false;
+    this.newSubFolderName = '';
+    this.subFolderMessage = 'Subpastas ainda nao estao disponiveis. O backend atual ainda nao possui suporte para criar pastas dentro de outra pasta.';
+  }
+
   downloadFile(doc: DocumentFile): void {
     try {
       this.documentService.downloadDocument(doc);
@@ -92,11 +101,37 @@ export class FolderDetailComponent implements OnInit {
     }
   }
 
-  deleteFile(docId: number): void {
-    if (confirm('Tem certeza que deseja excluir este documento?')) {
-      this.documentService.deleteDocument(docId).subscribe(() => {
-        this.loadData();
-      });
+  viewFile(doc: DocumentFile): void {
+    try {
+      this.documentService.viewDocument(doc);
+    } catch (err) {
+      console.error('Erro ao visualizar arquivo:', err);
+      alert('Nao foi possivel visualizar o arquivo.');
     }
+  }
+
+  deleteFile(event: Event, doc: DocumentFile): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const docId = Number(doc.id);
+    if (this.deletingDocumentIds.has(docId)) {
+      return;
+    }
+
+    this.deletingDocumentIds.add(docId);
+
+    this.documentService.deleteDocument(docId).pipe(
+      finalize(() => this.deletingDocumentIds.delete(docId))
+    ).subscribe({
+      next: () => {
+        this.documents = this.documents.filter(doc => String(doc.id) !== String(docId));
+        this.loadData();
+      },
+      error: err => {
+        console.error('Erro ao excluir arquivo:', err);
+        alert(`Nao foi possivel excluir o arquivo. Status: ${err.status || 'sem resposta do backend'}.`);
+      }
+    });
   }
 }

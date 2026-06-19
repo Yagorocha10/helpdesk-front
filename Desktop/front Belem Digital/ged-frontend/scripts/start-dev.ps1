@@ -44,6 +44,17 @@ function Stop-Port {
   }
 }
 
+function Resolve-MavenCommand {
+  param([string]$BackendDir)
+
+  $globalMaven = Get-Command "mvn.cmd" -ErrorAction SilentlyContinue
+  if ($globalMaven) {
+    return $globalMaven.Source
+  }
+
+  return (Join-Path $BackendDir "mvnw.cmd")
+}
+
 $backendDir = Resolve-BackendPath -RequestedPath $BackendPath
 
 Stop-Port -Port $BackendPort
@@ -53,10 +64,10 @@ $backendOut = Join-Path $Root "backend.out.log"
 $backendErr = Join-Path $Root "backend.err.log"
 $frontendOut = Join-Path $Root "ng-serve.out.log"
 $frontendErr = Join-Path $Root "ng-serve.err.log"
-$mavenWrapper = Join-Path $backendDir "mvnw.cmd"
+$mavenCommand = Resolve-MavenCommand -BackendDir $backendDir
 
 Write-Host "Starting backend on port $BackendPort..."
-Start-Process -FilePath $mavenWrapper `
+Start-Process -FilePath $mavenCommand `
   -ArgumentList @("spring-boot:run", "-Dspring-boot.run.arguments=--server.port=$BackendPort") `
   -WorkingDirectory $backendDir `
   -WindowStyle Hidden `

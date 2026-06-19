@@ -28,6 +28,15 @@
   }
 }
 
+.search-container {
+  margin-bottom: 20px;
+
+  .search-field {
+    width: 100%;
+    max-width: 500px;
+  }
+}
+
 .folders-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -53,6 +62,7 @@
     align-items: center;
     gap: 1.25rem;
     padding: 1.25rem !important;
+    padding-right: 3.5rem !important;
   }
 }
 
@@ -61,9 +71,11 @@
   top: 8px;
   right: 8px;
   color: #dc3545;
-  opacity: 0;
-  transition: opacity 0.2s, background-color 0.2s;
+  background: #ffffff;
   z-index: 2;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, background-color 0.2s;
 
   &:hover {
     background-color: #f8d7da;
@@ -72,13 +84,14 @@
 
 .folder-card:hover .folder-delete-btn {
   opacity: 1;
+  pointer-events: auto;
 }
 
 .folder-icon {
   font-size: 40px;
   width: 40px;
   height: 40px;
-  color: #ffca28; // Cor amarela padrão de pasta comercial
+  color: #ffca28;
 }
 
 .folder-info {
@@ -96,30 +109,49 @@
     color: #6c757d;
     margin-top: 2px;
   }
+}
 
-  .search-container {
-  margin-bottom: 20px;
-  .search-field { width: 100%; max-width: 500px; }
-}
 .search-results {
-  h3 { margin-top: 20px; color: #555; }
-  .no-results { padding: 24px; font-style: italic; color: #757575; }
+  h3 {
+    margin-top: 20px;
+    color: #555;
+  }
+
+  .no-results {
+    padding: 24px;
+    font-style: italic;
+    color: #757575;
+  }
 }
+
 .search-docs-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: white;
+  background: #ffffff;
   padding: 12px;
   border-radius: 4px;
   border: 1px solid #e0e0e0;
-  .search-doc-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px;
-    border-bottom: 1px solid #eee;
-    .doc-details { display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1; }
-  }
 }
+
+.search-doc-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  border-bottom: 1px solid #eeeeee;
+
+  .doc-details {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    flex: 1;
+  }
+
+  .doc-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
 }

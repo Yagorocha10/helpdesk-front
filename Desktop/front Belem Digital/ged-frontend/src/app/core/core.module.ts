@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LayoutComponent } from './components/layout/layout.component';
-import { SharedModule } from '../shared/shared.module'; // Linha adicionada
-import { RouterModule } from '@angular/router'; // Necessário para o router-outlet funcionar
+import { SharedModule } from '../shared/shared.module'; 
+import { RouterModule } from '@angular/router';
 
 @NgModule({
   declarations: [
@@ -10,8 +10,8 @@ import { RouterModule } from '@angular/router'; // Necessário para o router-out
   ],
   imports: [
     CommonModule,
-    SharedModule, // Adicionado aqui
-    RouterModule  // Adicionado aqui
+    SharedModule,
+    RouterModule
   ],
   exports: [
     LayoutComponent

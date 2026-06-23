@@ -1,97 +1,107 @@
-<div class="ged-container">
-  <div class="page-header">
-    <h2>Pastas de Documentos</h2>
-    <button type="button" mat-flat-button color="primary" class="btn-create" (click)="openCreateFolderDialog()">
-      <mat-icon>create_new_folder</mat-icon>
-      Nova Pasta
-    </button>
-  </div>
+<div class="dashboard-layout">
+  <app-folder-tree
+    class="dashboard-sidebar"
+    [folders]="folders"
+    [selectedFolderId]="selectedFolderId"
+    (folderSelected)="onFolderTreeSelected($event)"
+    (treeChanged)="loadFolders()">
+  </app-folder-tree>
 
-  <div class="search-container">
-    <mat-form-field appearance="outline" class="search-field">
-      <mat-label>Pesquisar pastas ou arquivos...</mat-label>
-      <input matInput [(ngModel)]="searchQuery" (input)="onSearch()">
-      <mat-icon matSuffix>search</mat-icon>
-    </mat-form-field>
-  </div>
-
-  <div *ngIf="!isSearching" class="folders-grid">
-    <mat-card class="folder-card" *ngFor="let folder of folders">
-      <button
-        type="button"
-        mat-icon-button
-        class="folder-delete-btn"
-        title="Excluir pasta"
-        [disabled]="deletingFolderIds.has(folder.id)"
-        (mousedown)="$event.stopPropagation()"
-        (click)="deleteFolder($event, folder)">
-        <mat-icon>delete</mat-icon>
+  <div class="ged-container">
+    <div class="page-header">
+      <h2>Pastas de Documentos</h2>
+      <button type="button" mat-flat-button color="primary" class="btn-create" (click)="openCreateFolderDialog()">
+        <mat-icon>create_new_folder</mat-icon>
+        Nova Pasta
       </button>
-      <mat-card-content class="folder-content" (click)="goToFolder(folder.id)">
-        <mat-icon class="folder-icon">folder</mat-icon>
-        <div class="folder-info">
-          <span class="folder-name">{{ folder.name }}</span>
-          <span class="folder-count">{{ folder.fileCount }} arquivos</span>
-        </div>
-      </mat-card-content>
-    </mat-card>
-  </div>
-
-  <div *ngIf="isSearching" class="search-results">
-    <div *ngIf="searchResults.folders.length === 0 && searchResults.documents.length === 0" class="no-results">
-      Nenhum resultado encontrado para "{{ searchQuery }}"
     </div>
 
-    <div *ngIf="searchResults.folders.length > 0">
-      <h3>Pastas Encontradas</h3>
-      <div class="folders-grid">
-        <mat-card class="folder-card" *ngFor="let folder of searchResults.folders">
-          <button
-            type="button"
-            mat-icon-button
-            class="folder-delete-btn"
-            title="Excluir pasta"
-            [disabled]="deletingFolderIds.has(folder.id)"
-            (mousedown)="$event.stopPropagation()"
-            (click)="deleteFolder($event, folder)">
-            <mat-icon>delete</mat-icon>
-          </button>
-          <mat-card-content class="folder-content" (click)="goToFolder(folder.id)">
-            <mat-icon class="folder-icon">folder</mat-icon>
-            <div class="folder-info">
-              <span class="folder-name">{{ folder.name }}</span>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      </div>
+    <div class="search-container">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Pesquisar pastas ou arquivos...</mat-label>
+        <input matInput [(ngModel)]="searchQuery" (input)="onSearch()">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
     </div>
 
-    <div *ngIf="searchResults.documents.length > 0" class="docs-result-section">
-      <h3>Arquivos Encontrados</h3>
-      <div class="search-docs-list">
-        <div *ngFor="let doc of searchResults.documents" class="search-doc-item">
-          <div class="doc-details" (click)="viewFile(doc)">
-            <mat-icon>description</mat-icon>
-            <span>{{ doc.name }}</span>
+    <div *ngIf="!isSearching" class="folders-grid">
+      <mat-card class="folder-card" *ngFor="let folder of folders">
+        <button
+          type="button"
+          mat-icon-button
+          class="folder-delete-btn"
+          title="Excluir pasta"
+          [disabled]="deletingFolderIds.has(folder.id)"
+          (mousedown)="$event.stopPropagation()"
+          (click)="deleteFolder($event, folder)">
+          <mat-icon>delete</mat-icon>
+        </button>
+        <mat-card-content class="folder-content" (click)="goToFolder(folder.id)">
+          <mat-icon class="folder-icon">folder</mat-icon>
+          <div class="folder-info">
+            <span class="folder-name">{{ folder.name }}</span>
+            <span class="folder-count">{{ folder.fileCount }} arquivos</span>
           </div>
-          <div class="doc-actions">
-            <button type="button" mat-icon-button color="primary" title="Visualizar" (click)="$event.stopPropagation(); viewFile(doc)">
-              <mat-icon>visibility</mat-icon>
-            </button>
-            <button type="button" mat-icon-button color="accent" title="Baixar" (click)="$event.stopPropagation(); downloadFile(doc)">
-              <mat-icon>download</mat-icon>
-            </button>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div *ngIf="isSearching" class="search-results">
+      <div *ngIf="searchResults.folders.length === 0 && searchResults.documents.length === 0" class="no-results">
+        Nenhum resultado encontrado para "{{ searchQuery }}"
+      </div>
+
+      <div *ngIf="searchResults.folders.length > 0">
+        <h3>Pastas Encontradas</h3>
+        <div class="folders-grid">
+          <mat-card class="folder-card" *ngFor="let folder of searchResults.folders">
             <button
               type="button"
-              mat-stroked-button
-              color="warn"
-              title="Excluir"
-              [disabled]="deletingDocumentIds.has(doc.id)"
+              mat-icon-button
+              class="folder-delete-btn"
+              title="Excluir pasta"
+              [disabled]="deletingFolderIds.has(folder.id)"
               (mousedown)="$event.stopPropagation()"
-              (click)="deleteFile($event, doc)">
+              (click)="deleteFolder($event, folder)">
               <mat-icon>delete</mat-icon>
-              Apagar
             </button>
+            <mat-card-content class="folder-content" (click)="goToFolder(folder.id)">
+              <mat-icon class="folder-icon">folder</mat-icon>
+              <div class="folder-info">
+                <span class="folder-name">{{ folder.name }}</span>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+
+      <div *ngIf="searchResults.documents.length > 0" class="docs-result-section">
+        <h3>Arquivos Encontrados</h3>
+        <div class="search-docs-list">
+          <div *ngFor="let doc of searchResults.documents" class="search-doc-item">
+            <div class="doc-details" (click)="viewFile(doc)">
+              <mat-icon>description</mat-icon>
+              <span>{{ doc.name }}</span>
+            </div>
+            <div class="doc-actions">
+              <button type="button" mat-icon-button color="primary" title="Visualizar" (click)="$event.stopPropagation(); viewFile(doc)">
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button type="button" mat-icon-button color="accent" title="Baixar" (click)="$event.stopPropagation(); downloadFile(doc)">
+                <mat-icon>download</mat-icon>
+              </button>
+              <button
+                type="button"
+                mat-stroked-button
+                color="warn"
+                title="Excluir"
+                [disabled]="deletingDocumentIds.has(doc.id)"
+                (mousedown)="$event.stopPropagation()"
+                (click)="deleteFile($event, doc)">
+                <mat-icon>delete</mat-icon>
+                Apagar
+              </button>
+            </div>
           </div>
         </div>
       </div>

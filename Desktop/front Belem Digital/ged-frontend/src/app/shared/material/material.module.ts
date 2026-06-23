@@ -10,6 +10,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
+import { MatMenuModule } from '@angular/material/menu';
 
 const MATERIAL_MODULES = [
   MatCardModule,
@@ -22,7 +23,8 @@ const MATERIAL_MODULES = [
   MatFormFieldModule,
   MatInputModule,
   MatDialogModule,
-  MatTableModule
+  MatTableModule,
+  MatMenuModule
 ];
 
 @NgModule({

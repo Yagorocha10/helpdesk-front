@@ -1,0 +1,89 @@
+<aside class="folder-tree-sidebar" [class.collapsed]="isCollapsed" aria-label="Explorador de pastas">
+  <div class="folder-tree-header">
+    <div class="folder-tree-title">
+      <mat-icon>account_tree</mat-icon>
+      <span>Pastas</span>
+    </div>
+
+    <button
+      type="button"
+      mat-icon-button
+      class="collapse-btn"
+      (click)="toggleSidebar()"
+      [attr.aria-label]="isCollapsed ? 'Expandir sidebar de pastas' : 'Recolher sidebar de pastas'">
+      <mat-icon>{{ isCollapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+    </button>
+  </div>
+
+  <cdk-virtual-scroll-viewport
+    #treeContainer
+    class="folder-tree-scroll"
+    itemSize="34"
+    role="tree"
+    aria-label="Pastas, subpastas e arquivos">
+    <div
+      *cdkVirtualFor="let node of visibleNodes; trackBy: trackByNodeKey"
+      class="folder-tree-node"
+      [class.file-node]="node.type === 'file'"
+      role="treeitem"
+      [class.selected]="isSelected(node)"
+      [class.active]="isActive(node)"
+      [class.loading]="isLoading(node)"
+      [style.padding-left.px]="isCollapsed ? 0 : node.level * 16"
+      [matMenuTriggerFor]="folderContextMenu"
+      #contextMenuTrigger="matMenuTrigger"
+      [attr.aria-level]="node.level + 1"
+      [attr.aria-selected]="isSelected(node)"
+      [attr.aria-expanded]="canExpand(node) ? isExpanded(node) : null"
+      [attr.tabindex]="isActive(node) ? 0 : -1"
+      [attr.data-node-key]="node.key"
+      (keydown)="onTreeKeydown($event, node)"
+      (contextmenu)="openContextMenu($event, node, contextMenuTrigger)"
+      (dragover)="onFileDragOver($event, node)"
+      (drop)="onFileDrop($event, node)">
+      <button
+        type="button"
+        mat-icon-button
+        class="folder-toggle-btn"
+        [class.hidden-toggle]="!canExpand(node)"
+        [disabled]="isLoading(node)"
+        (click)="toggleFolder($event, node)"
+        [attr.aria-label]="isExpanded(node) ? 'Recolher subpastas e arquivos' : 'Expandir subpastas e arquivos'">
+        <mat-icon>{{ isExpanded(node) ? 'expand_more' : 'chevron_right' }}</mat-icon>
+      </button>
+
+      <button
+        type="button"
+        class="folder-node-btn"
+        [class.selected]="isSelected(node)"
+        (click)="selectNode(node)">
+        <mat-icon class="folder-icon" *ngIf="node.type === 'folder'">
+          {{ isExpanded(node) ? 'folder_open' : 'folder' }}
+        </mat-icon>
+        <mat-icon class="file-icon" *ngIf="node.type === 'file'">description</mat-icon>
+        <span class="folder-name">{{ getNodeName(node) }}</span>
+        <mat-icon *ngIf="isLoading(node)" class="loading-icon">sync</mat-icon>
+      </button>
+    </div>
+
+    <div *ngIf="visibleNodes.length === 0" class="folder-tree-empty">
+      <mat-icon>folder_off</mat-icon>
+      <span>Nenhuma pasta encontrada</span>
+    </div>
+  </cdk-virtual-scroll-viewport>
+</aside>
+
+<mat-menu #folderContextMenu="matMenu">
+  <button mat-menu-item [disabled]="!contextFolder || actionFolderIds.has(contextFolder.id)" (click)="createSubFolder()">
+    <mat-icon>create_new_folder</mat-icon>
+    <span>Nova Subpasta</span>
+  </button>
+  <button mat-menu-item [disabled]="!contextFolder || actionFolderIds.has(contextFolder.id)" (click)="renameFolder()">
+    <mat-icon>drive_file_rename_outline</mat-icon>
+    <span>Renomear</span>
+  </button>
+  <button mat-menu-item [disabled]="!contextFolder || actionFolderIds.has(contextFolder.id)" (click)="deleteFolder()">
+    <mat-icon>delete</mat-icon>
+    <span>Excluir</span>
+  </button>
+</mat-menu>

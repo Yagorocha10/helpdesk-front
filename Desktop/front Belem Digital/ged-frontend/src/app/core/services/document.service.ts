@@ -11,6 +11,8 @@ interface FolderResponseDTO {
   dataCriacao: string;
   parentId?: number | null;
   children?: FolderResponseDTO[];
+  documents?: DocumentResponseDTO[];
+  files?: DocumentResponseDTO[];
 }
 
 interface DocumentResponseDTO {
@@ -63,6 +65,12 @@ export class DocumentService {
     }
 
     return this.http.post<FolderResponseDTO>(this.foldersUrl, payload).pipe(
+      map(folder => this.mapFolder(folder))
+    );
+  }
+
+  renameFolder(folderId: number, name: string): Observable<Folder> {
+    return this.http.patch<FolderResponseDTO>(`${this.foldersUrl}/${folderId}`, { nome: name.trim() }).pipe(
       map(folder => this.mapFolder(folder))
     );
   }
@@ -137,14 +145,17 @@ export class DocumentService {
     parentIdFallback: number | null = null
   ): Folder {
     const fileCount = documents.filter(doc => String(doc.folderId) === String(folder.id)).length;
-    const children = (folder.children || []).map(child => this.mapFolder(child, documents, folder.id));
+    const folderDocuments = folder.documents || folder.files || [];
+    const children = folder.children?.map(child => this.mapFolder(child, documents, folder.id));
+    const files = folderDocuments.map(doc => this.mapDocument(doc));
 
     return {
       id: folder.id,
       name: folder.nome,
-      fileCount,
+      fileCount: files.length || fileCount,
       parentId: folder.parentId ?? parentIdFallback,
       children,
+      files,
       createdAt: folder.dataCriacao
     };
   }

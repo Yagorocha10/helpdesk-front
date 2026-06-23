@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { catchError, forkJoin, map, Observable, of, throwError } from 'rxjs';
+import { catchError, forkJoin, map, Observable, of } from 'rxjs';
 import { Folder } from '../models/folder.model';
 import { DocumentFile } from '../models/document-file.model';
 import { SearchResult } from '../models/search-result.model';
@@ -9,6 +9,8 @@ interface FolderResponseDTO {
   id: number;
   nome: string;
   dataCriacao: string;
+  parentId?: number | null;
+  children?: FolderResponseDTO[];
 }
 
 interface DocumentResponseDTO {
@@ -31,15 +33,16 @@ export class DocumentService {
   constructor(private http: HttpClient) {}
 
   getFolders(parentId: number | null = null): Observable<Folder[]> {
-    if (parentId !== null) {
-      return of([]);
-    }
-
     return forkJoin({
-      folders: this.http.get<FolderResponseDTO[]>(this.foldersUrl),
+      folders: this.http.get<FolderResponseDTO[]>(this.foldersUrl, {
+        params: parentId !== null ? { parentId } : {}
+      }),
       documents: this.getAllDocumentsRaw().pipe(catchError(() => of([] as DocumentResponseDTO[])))
     }).pipe(
-      map(({ folders, documents }) => folders.map(folder => this.mapFolder(folder, documents)))
+      map(({ folders, documents }) => {
+        const mappedFolders = folders.map(folder => this.mapFolder(folder, documents));
+        return this.filterFoldersByParent(mappedFolders, parentId);
+      })
     );
   }
 
@@ -53,11 +56,13 @@ export class DocumentService {
   }
 
   addFolder(name: string, parentId: number | null = null): Observable<Folder> {
+    const payload: { nome: string; parentId?: number } = { nome: name.trim() };
+
     if (parentId !== null) {
-      return throwError(() => new Error('O backend ainda nao suporta subpastas.'));
+      payload.parentId = parentId;
     }
 
-    return this.http.post<FolderResponseDTO>(this.foldersUrl, { nome: name }).pipe(
+    return this.http.post<FolderResponseDTO>(this.foldersUrl, payload).pipe(
       map(folder => this.mapFolder(folder))
     );
   }
@@ -110,7 +115,7 @@ export class DocumentService {
       documents: this.getAllDocumentsRaw()
     }).pipe(
       map(({ folders, documents }) => ({
-        folders: folders.filter(folder => folder.name.toLowerCase().includes(txt)),
+        folders: this.flattenFolders(folders).filter(folder => folder.name.toLowerCase().includes(txt)),
         documents: documents
           .map(doc => this.mapDocument(doc))
           .filter(doc => doc.name.toLowerCase().includes(txt))
@@ -126,16 +131,31 @@ export class DocumentService {
     return this.http.get<DocumentResponseDTO[]>(`${this.foldersUrl}/${folderId}/documents`);
   }
 
-  private mapFolder(folder: FolderResponseDTO, documents: DocumentResponseDTO[] = []): Folder {
+  private mapFolder(
+    folder: FolderResponseDTO,
+    documents: DocumentResponseDTO[] = [],
+    parentIdFallback: number | null = null
+  ): Folder {
     const fileCount = documents.filter(doc => String(doc.folderId) === String(folder.id)).length;
+    const children = (folder.children || []).map(child => this.mapFolder(child, documents, folder.id));
 
     return {
       id: folder.id,
       name: folder.nome,
       fileCount,
-      parentId: null,
+      parentId: folder.parentId ?? parentIdFallback,
+      children,
       createdAt: folder.dataCriacao
     };
+  }
+
+  private filterFoldersByParent(folders: Folder[], parentId: number | null): Folder[] {
+    const candidates = parentId === null ? folders : this.flattenFolders(folders);
+    return candidates.filter(folder => (folder.parentId ?? null) === parentId);
+  }
+
+  private flattenFolders(folders: Folder[]): Folder[] {
+    return folders.flatMap(folder => [folder, ...this.flattenFolders(folder.children || [])]);
   }
 
   private mapDocument(doc: DocumentResponseDTO): DocumentFile {

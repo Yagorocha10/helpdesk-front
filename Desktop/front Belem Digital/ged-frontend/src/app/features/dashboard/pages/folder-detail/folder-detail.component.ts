@@ -20,6 +20,8 @@ export class FolderDetailComponent implements OnInit {
   newSubFolderName = '';
   showSubFolderInput = false;
   subFolderMessage = '';
+  isCreatingSubFolder = false;
+  deletingSubFolderIds = new Set<number>();
   deletingDocumentIds = new Set<number>();
 
   constructor(
@@ -71,25 +73,66 @@ export class FolderDetailComponent implements OnInit {
   }
 
   createSubFolder(): void {
-    if (this.newSubFolderName.trim()) {
-      this.documentService.addFolder(this.newSubFolderName, this.folderId).subscribe({
-        next: () => {
-          this.newSubFolderName = '';
-          this.showSubFolderInput = false;
-          this.loadData();
-        },
-        error: err => {
-          console.error('Erro ao criar subpasta:', err);
-          alert('O backend ainda nao possui suporte para subpastas.');
-        }
-      });
+    const subFolderName = this.newSubFolderName.trim();
+
+    if (!subFolderName || this.isCreatingSubFolder) {
+      return;
+    }
+
+    this.isCreatingSubFolder = true;
+
+    this.documentService.addFolder(subFolderName, this.folderId).pipe(
+      finalize(() => this.isCreatingSubFolder = false)
+    ).subscribe({
+      next: () => {
+        this.newSubFolderName = '';
+        this.showSubFolderInput = false;
+        this.subFolderMessage = '';
+        this.loadData();
+      },
+      error: err => {
+        console.error('Erro ao criar subpasta:', err);
+        alert('Nao foi possivel criar a subpasta. Verifique se o backend esta rodando.');
+      }
+    });
+  }
+
+  toggleSubFolderInput(): void {
+    this.showSubFolderInput = !this.showSubFolderInput;
+    this.subFolderMessage = '';
+
+    if (!this.showSubFolderInput) {
+      this.newSubFolderName = '';
     }
   }
 
-  showSubFolderUnavailableMessage(): void {
-    this.showSubFolderInput = false;
-    this.newSubFolderName = '';
-    this.subFolderMessage = 'Subpastas ainda nao estao disponiveis. O backend atual ainda nao possui suporte para criar pastas dentro de outra pasta.';
+  deleteSubFolder(event: Event, folder: Folder): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const folderId = Number(folder.id);
+    if (this.deletingSubFolderIds.has(folderId)) {
+      return;
+    }
+
+    this.deletingSubFolderIds.add(folderId);
+
+    this.documentService.deleteFolder(folderId).pipe(
+      finalize(() => this.deletingSubFolderIds.delete(folderId))
+    ).subscribe({
+      next: () => {
+        this.subFolders = this.subFolders.filter(item => String(item.id) !== String(folderId));
+        this.loadData();
+      },
+      error: err => {
+        console.error('Erro ao excluir subpasta:', err);
+        alert(`Nao foi possivel excluir a subpasta. Status: ${err.status || 'sem resposta do backend'}.`);
+      }
+    });
+  }
+
+  trackByFolderId(_index: number, folder: Folder): number {
+    return folder.id;
   }
 
   downloadFile(doc: DocumentFile): void {

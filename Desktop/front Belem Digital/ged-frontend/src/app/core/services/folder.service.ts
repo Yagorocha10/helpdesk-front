@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map, Observable, of, throwError } from 'rxjs';
+import { map, Observable, of } from 'rxjs';
 import { Folder } from '../models/folder.model';
 
 interface FolderResponseDTO {
   id: number;
   nome: string;
   dataCriacao: string;
+  parentId?: number | null;
+  children?: FolderResponseDTO[];
 }
 
 @Injectable({
@@ -18,12 +20,13 @@ export class FolderService {
   constructor(private http: HttpClient) {}
 
   getFolders(parentId: number | null = null): Observable<Folder[]> {
-    if (parentId !== null) {
-      return of([]);
-    }
-
-    return this.http.get<FolderResponseDTO[]>(this.apiUrl).pipe(
-      map(folders => folders.map(folder => this.mapFolder(folder)))
+    return this.http.get<FolderResponseDTO[]>(this.apiUrl, {
+      params: parentId !== null ? { parentId } : {}
+    }).pipe(
+      map(folders => {
+        const mappedFolders = folders.map(folder => this.mapFolder(folder));
+        return this.filterFoldersByParent(mappedFolders, parentId);
+      })
     );
   }
 
@@ -34,11 +37,13 @@ export class FolderService {
   }
 
   addFolder(name: string, parentId: number | null = null): Observable<Folder> {
+    const payload: { nome: string; parentId?: number } = { nome: name.trim() };
+
     if (parentId !== null) {
-      return throwError(() => new Error('O backend ainda nao suporta subpastas.'));
+      payload.parentId = parentId;
     }
 
-    return this.http.post<FolderResponseDTO>(this.apiUrl, { nome: name }).pipe(
+    return this.http.post<FolderResponseDTO>(this.apiUrl, payload).pipe(
       map(folder => this.mapFolder(folder))
     );
   }
@@ -52,17 +57,27 @@ export class FolderService {
     if (!txt) return of([]);
 
     return this.getFolders().pipe(
-      map(folders => folders.filter(folder => folder.name.toLowerCase().includes(txt)))
+      map(folders => this.flattenFolders(folders).filter(folder => folder.name.toLowerCase().includes(txt)))
     );
   }
 
-  private mapFolder(folder: FolderResponseDTO): Folder {
+  private mapFolder(folder: FolderResponseDTO, parentIdFallback: number | null = null): Folder {
     return {
       id: folder.id,
       name: folder.nome,
       fileCount: 0,
-      parentId: null,
+      parentId: folder.parentId ?? parentIdFallback,
+      children: (folder.children || []).map(child => this.mapFolder(child, folder.id)),
       createdAt: folder.dataCriacao
     };
+  }
+
+  private filterFoldersByParent(folders: Folder[], parentId: number | null): Folder[] {
+    const candidates = parentId === null ? folders : this.flattenFolders(folders);
+    return candidates.filter(folder => (folder.parentId ?? null) === parentId);
+  }
+
+  private flattenFolders(folders: Folder[]): Folder[] {
+    return folders.flatMap(folder => [folder, ...this.flattenFolders(folder.children || [])]);
   }
 }

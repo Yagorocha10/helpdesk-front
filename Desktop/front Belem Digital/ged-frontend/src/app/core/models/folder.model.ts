@@ -3,5 +3,6 @@ export interface Folder {
   name: string;
   fileCount: number;
   parentId?: number | null;
+  children?: Folder[];
   createdAt?: string;
 }

@@ -2,14 +2,18 @@
   
   <div class="detail-header">
     <div class="title-block">
-      <button type="button" mat-icon-button routerLink="/dashboard" class="btn-back">
+      <button
+        type="button"
+        mat-icon-button
+        [routerLink]="currentFolder?.parentId ? ['/dashboard/folder', currentFolder?.parentId] : ['/dashboard']"
+        class="btn-back">
         <mat-icon>arrow_back</mat-icon>
       </button>
       <h2>{{ currentFolder?.name || 'Documentos' }}</h2>
     </div>
     
     <div class="actions-block">
-      <button type="button" mat-stroked-button class="btn-subfolder" (click)="showSubFolderUnavailableMessage()">
+      <button type="button" mat-stroked-button class="btn-subfolder" (click)="toggleSubFolderInput()">
         <mat-icon>create_new_folder</mat-icon>
         Nova Subpasta
       </button>
@@ -27,14 +31,39 @@
   </div>
 
   <div *ngIf="showSubFolderInput" class="custom-subfolder-input-box">
-    <input type="text" [(ngModel)]="newSubFolderName" (keyup.enter)="createSubFolder()" placeholder="Nome da subpasta...">
-    <button type="button" mat-flat-button color="primary" (click)="createSubFolder()">Criar</button>
+    <input
+      type="text"
+      [(ngModel)]="newSubFolderName"
+      [disabled]="isCreatingSubFolder"
+      (keyup.enter)="createSubFolder()"
+      placeholder="Nome da subpasta...">
+    <button
+      type="button"
+      mat-flat-button
+      color="primary"
+      [disabled]="isCreatingSubFolder || !newSubFolderName.trim()"
+      (click)="createSubFolder()">
+      Criar
+    </button>
   </div>
 
   <div *ngIf="subFolders.length > 0" class="subfolders-section">
     <h4 class="section-indicator">Subpastas</h4>
     <div class="custom-folders-grid">
-      <div class="custom-folder-card mini" *ngFor="let sub of subFolders" [routerLink]="['/dashboard/folder', sub.id]">
+      <div
+        class="custom-folder-card mini"
+        *ngFor="let sub of subFolders; trackBy: trackByFolderId"
+        [routerLink]="['/dashboard/folder', sub.id]">
+        <button
+          type="button"
+          mat-icon-button
+          class="subfolder-delete-btn"
+          title="Excluir subpasta"
+          [disabled]="deletingSubFolderIds.has(sub.id)"
+          (mousedown)="$event.stopPropagation()"
+          (click)="deleteSubFolder($event, sub)">
+          <mat-icon>delete</mat-icon>
+        </button>
         <div class="card-row-top">
           <div class="folder-icon-wrapper">
             <mat-icon>folder</mat-icon>

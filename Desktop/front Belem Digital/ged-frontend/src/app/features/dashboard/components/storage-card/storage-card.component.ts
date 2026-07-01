@@ -51,7 +51,7 @@ export class StorageCardComponent implements OnInit, OnDestroy {
       },
       error: err => {
         console.error('Erro ao carregar informacoes de armazenamento:', err);
-        this.errorMessage = 'Nao foi possivel carregar o armazenamento.';
+        this.errorMessage = 'Não foi possível carregar o armazenamento.';
       }
     });
   }

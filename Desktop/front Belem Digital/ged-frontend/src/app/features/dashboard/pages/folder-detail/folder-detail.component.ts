@@ -66,7 +66,7 @@ export class FolderDetailComponent implements OnInit {
       },
       error: err => {
         console.error('Erro ao enviar arquivo:', err);
-        alert('Nao foi possivel enviar o arquivo.');
+        alert('Não foi possível enviar o arquivo.');
         input.value = '';
       }
     });
@@ -92,7 +92,7 @@ export class FolderDetailComponent implements OnInit {
       },
       error: err => {
         console.error('Erro ao criar subpasta:', err);
-        alert('Nao foi possivel criar a subpasta. Verifique se o backend esta rodando.');
+        alert('Não foi possível criar a subpasta. Verifique se o backend está rodando.');
       }
     });
   }
@@ -126,7 +126,7 @@ export class FolderDetailComponent implements OnInit {
       },
       error: err => {
         console.error('Erro ao excluir subpasta:', err);
-        alert(`Nao foi possivel excluir a subpasta. Status: ${err.status || 'sem resposta do backend'}.`);
+        alert(`Não foi possível excluir a subpasta. Status: ${err.status || 'sem resposta do backend'}.`);
       }
     });
   }
@@ -140,7 +140,7 @@ export class FolderDetailComponent implements OnInit {
       this.documentService.downloadDocument(doc);
     } catch (err) {
       console.error('Erro ao baixar arquivo:', err);
-      alert('Nao foi possivel baixar o arquivo.');
+      alert('Não foi possível baixar o arquivo.');
     }
   }
 
@@ -149,7 +149,7 @@ export class FolderDetailComponent implements OnInit {
       this.documentService.viewDocument(doc);
     } catch (err) {
       console.error('Erro ao visualizar arquivo:', err);
-      alert('Nao foi possivel visualizar o arquivo.');
+      alert('Não foi possível visualizar o arquivo.');
     }
   }
 
@@ -173,7 +173,7 @@ export class FolderDetailComponent implements OnInit {
       },
       error: err => {
         console.error('Erro ao excluir arquivo:', err);
-        alert(`Nao foi possivel excluir o arquivo. Status: ${err.status || 'sem resposta do backend'}.`);
+        alert(`Não foi possível excluir o arquivo. Status: ${err.status || 'sem resposta do backend'}.`);
       }
     });
   }

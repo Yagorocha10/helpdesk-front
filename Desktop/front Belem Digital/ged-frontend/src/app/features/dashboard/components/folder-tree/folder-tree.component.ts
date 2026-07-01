@@ -146,7 +146,7 @@ export class FolderTreeComponent implements OnChanges {
       },
       error: err => {
         console.error('Erro ao criar subpasta:', err);
-        alert('Nao foi possivel criar a subpasta.');
+        alert('Não foi possível criar a subpasta.');
       }
     });
   }
@@ -172,7 +172,7 @@ export class FolderTreeComponent implements OnChanges {
       },
       error: err => {
         console.error('Erro ao renomear pasta:', err);
-        alert('Nao foi possivel renomear a pasta.');
+        alert('Não foi possível renomear a pasta.');
       }
     });
   }
@@ -200,7 +200,7 @@ export class FolderTreeComponent implements OnChanges {
       },
       error: err => {
         console.error('Erro ao excluir pasta:', err);
-        alert('Nao foi possivel excluir a pasta.');
+        alert('Não foi possível excluir a pasta.');
       }
     });
   }
@@ -290,7 +290,7 @@ export class FolderTreeComponent implements OnChanges {
       },
       error: err => {
         console.error('Erro ao carregar conteudo da pasta:', err);
-        alert('Nao foi possivel carregar subpastas e arquivos.');
+        alert('Não foi possível carregar subpastas e arquivos.');
       }
     });
   }

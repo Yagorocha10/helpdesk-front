@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { map, Observable, of } from 'rxjs';
 import { Folder } from '../models/folder.model';
 import { DocumentFile } from '../models/document-file.model';
+import { environment } from 'src/environments/environment';
 
 interface DocumentResponseDTO {
   id: number;
@@ -28,7 +29,7 @@ interface FolderResponseDTO {
   providedIn: 'root'
 })
 export class FolderService {
-  private readonly apiUrl = 'http://localhost:8080/folders';
+  private readonly apiUrl = `${environment.apiUrl}/folders`;
 
   constructor(private http: HttpClient) {}
 

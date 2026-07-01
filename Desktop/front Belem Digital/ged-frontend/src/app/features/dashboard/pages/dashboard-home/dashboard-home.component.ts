@@ -77,7 +77,7 @@ export class DashboardHomeComponent implements OnInit {
           },
           error: err => {
             console.error('Erro ao criar pasta:', err);
-            alert('Nao foi possivel criar a pasta. Verifique se o backend esta rodando.');
+            alert('Não foi possível criar a pasta. Verifique se o backend está rodando.');
           }
         });
       }
@@ -108,7 +108,7 @@ export class DashboardHomeComponent implements OnInit {
       },
       error: err => {
         console.error('Erro ao excluir pasta:', err);
-        alert(`Nao foi possivel excluir a pasta. Status: ${err.status || 'sem resposta do backend'}.`);
+        alert(`Não foi possível excluir a pasta. Status: ${err.status || 'sem resposta do backend'}.`);
       }
     });
   }
@@ -127,7 +127,7 @@ export class DashboardHomeComponent implements OnInit {
       this.documentService.downloadDocument(doc);
     } catch (err) {
       console.error('Erro ao baixar arquivo:', err);
-      alert('Nao foi possivel baixar o arquivo.');
+      alert('Não foi possível baixar o arquivo.');
     }
   }
 
@@ -136,7 +136,7 @@ export class DashboardHomeComponent implements OnInit {
       this.documentService.viewDocument(doc);
     } catch (err) {
       console.error('Erro ao visualizar arquivo:', err);
-      alert('Nao foi possivel visualizar o arquivo.');
+      alert('Não foi possível visualizar o arquivo.');
     }
   }
 
@@ -163,7 +163,7 @@ export class DashboardHomeComponent implements OnInit {
       },
       error: err => {
         console.error('Erro ao excluir arquivo:', err);
-        alert(`Nao foi possivel excluir o arquivo. Status: ${err.status || 'sem resposta do backend'}.`);
+        alert(`Não foi possível excluir o arquivo. Status: ${err.status || 'sem resposta do backend'}.`);
       }
     });
   }

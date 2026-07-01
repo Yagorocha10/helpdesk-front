@@ -1,0 +1,24 @@
+<mat-card class="storage-card">
+  <mat-card-content class="storage-content">
+    <div class="storage-icon">
+      <mat-icon>inventory_2</mat-icon>
+    </div>
+
+    <div class="storage-metrics">
+      <span class="storage-label">Armazenamento</span>
+      <div class="storage-values">
+        <div class="metric">
+          <strong>{{ formattedTotalFiles }}</strong>
+          <span>{{ totalFilesLabel }}</span>
+        </div>
+        <div class="metric">
+          <strong>{{ formattedTotalSize }}</strong>
+          <span>utilizados</span>
+        </div>
+      </div>
+      <span *ngIf="errorMessage" class="storage-error">{{ errorMessage }}</span>
+    </div>
+
+    <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
+  </mat-card-content>
+</mat-card>

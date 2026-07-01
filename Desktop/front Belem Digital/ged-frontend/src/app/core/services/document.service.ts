@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { catchError, forkJoin, map, Observable, of } from 'rxjs';
+import { catchError, forkJoin, map, Observable, of, Subject, tap } from 'rxjs';
 import { Folder } from '../models/folder.model';
 import { DocumentFile } from '../models/document-file.model';
 import { SearchResult } from '../models/search-result.model';
+import { environment } from 'src/environments/environment';
+import { StorageResponse } from 'src/app/models/storage-response.model';
 
 interface FolderResponseDTO {
   id: number;
@@ -29,8 +31,10 @@ interface DocumentResponseDTO {
   providedIn: 'root'
 })
 export class DocumentService {
-  private readonly foldersUrl = 'http://localhost:8080/folders';
-  private readonly documentsUrl = 'http://localhost:8080/documents';
+  private readonly foldersUrl = `${environment.apiUrl}/folders`;
+  private readonly documentsUrl = `${environment.apiUrl}/documents`;
+  private readonly storageRefreshSubject = new Subject<void>();
+  readonly storageRefresh$ = this.storageRefreshSubject.asObservable();
 
   constructor(private http: HttpClient) {}
 
@@ -76,7 +80,9 @@ export class DocumentService {
   }
 
   deleteFolder(folderId: number): Observable<void> {
-    return this.http.delete<void>(`${this.foldersUrl}/${folderId}`);
+    return this.http.delete<void>(`${this.foldersUrl}/${folderId}`).pipe(
+      tap(() => this.notifyStorageChanged())
+    );
   }
 
   getDocumentsByFolder(folderId: number): Observable<DocumentFile[]> {
@@ -90,12 +96,19 @@ export class DocumentService {
     formData.append('file', file);
 
     return this.http.post<DocumentResponseDTO>(`${this.foldersUrl}/${folderId}/documents`, formData).pipe(
-      map(doc => this.mapDocument(doc))
+      map(doc => this.mapDocument(doc)),
+      tap(() => this.notifyStorageChanged())
     );
   }
 
   deleteDocument(docId: number): Observable<void> {
-    return this.http.delete<void>(`${this.documentsUrl}/${docId}`);
+    return this.http.delete<void>(`${this.documentsUrl}/${docId}`).pipe(
+      tap(() => this.notifyStorageChanged())
+    );
+  }
+
+  getStorageInfo(): Observable<StorageResponse> {
+    return this.http.get<StorageResponse>(environment.documentsStorageUrl);
   }
 
   downloadDocument(doc: DocumentFile): void {
@@ -137,6 +150,10 @@ export class DocumentService {
 
   private getDocumentsByFolderRaw(folderId: number): Observable<DocumentResponseDTO[]> {
     return this.http.get<DocumentResponseDTO[]>(`${this.foldersUrl}/${folderId}/documents`);
+  }
+
+  private notifyStorageChanged(): void {
+    this.storageRefreshSubject.next();
   }
 
   private mapFolder(

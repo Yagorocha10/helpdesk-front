@@ -11,6 +11,7 @@ import { DashboardHomeComponent } from './pages/dashboard-home/dashboard-home.co
 import { FolderDetailComponent } from './pages/folder-detail/folder-detail.component';
 import { CreateFolderDialogComponent } from './components/create-folder-dialog/create-folder-dialog.component';
 import { FolderTreeComponent } from './components/folder-tree/folder-tree.component';
+import { StorageCardComponent } from './components/storage-card/storage-card.component';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,8 @@ import { FolderTreeComponent } from './components/folder-tree/folder-tree.compon
     FolderTreeComponent,
     DashboardHomeComponent,
     FolderDetailComponent,
-    CreateFolderDialogComponent
+    CreateFolderDialogComponent,
+    StorageCardComponent
   ],
   imports: [
     CommonModule,

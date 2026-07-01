@@ -1,0 +1,92 @@
+.storage-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04) !important;
+}
+
+.storage-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px !important;
+  min-height: 96px;
+}
+
+.storage-icon {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #e0f2fe;
+  color: #0369a1;
+
+  mat-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 24px;
+  }
+}
+
+.storage-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.storage-label {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.storage-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  strong {
+    color: #0f172a;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  span {
+    color: #64748b;
+    font-size: 13px;
+  }
+}
+
+.storage-error {
+  color: #b91c1c;
+  font-size: 13px;
+}
+
+mat-progress-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+@media (max-width: 520px) {
+  .storage-content {
+    align-items: flex-start;
+  }
+
+  .storage-values {
+    gap: 12px;
+  }
+}

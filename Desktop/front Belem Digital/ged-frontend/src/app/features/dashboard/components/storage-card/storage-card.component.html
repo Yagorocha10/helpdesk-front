@@ -1,22 +1,19 @@
 <mat-card class="storage-card">
   <mat-card-content class="storage-content">
-    <div class="storage-icon">
-      <mat-icon>inventory_2</mat-icon>
+    <div class="storage-icon" aria-hidden="true">
+      <mat-icon>storage</mat-icon>
     </div>
 
-    <div class="storage-metrics">
+    <div class="storage-main">
       <span class="storage-label">Armazenamento</span>
-      <div class="storage-values">
-        <div class="metric">
-          <strong>{{ formattedTotalFiles }}</strong>
-          <span>{{ totalFilesLabel }}</span>
-        </div>
-        <div class="metric">
-          <strong>{{ formattedTotalSize }}</strong>
-          <span>utilizados</span>
-        </div>
-      </div>
+      <span class="storage-summary">
+       • {{ formattedTotalFiles }} {{ totalFilesLabel }} • {{ formattedTotalSize }}
+      </span>
       <span *ngIf="errorMessage" class="storage-error">{{ errorMessage }}</span>
+    </div>
+
+    <div class="storage-progress" aria-label="Porcentagem visual de armazenamento utilizado">
+      <div class="storage-progress-bar" [class.empty]="storagePercent === 0" [style.width.%]="storagePercent"></div>
     </div>
 
     <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>

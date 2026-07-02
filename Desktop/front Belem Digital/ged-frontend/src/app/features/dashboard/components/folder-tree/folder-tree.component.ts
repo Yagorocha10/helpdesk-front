@@ -86,7 +86,7 @@ export class FolderTreeComponent implements OnChanges {
   }
 
   getNodeName(node: FolderTreeNode): string {
-    return node.type === 'folder' ? node.folder.name : node.file.name;
+    return node.type === 'folder' ? this.formatFolderName(node.folder.name) : node.file.name;
   }
 
   toggleFolder(event: Event, node: FolderTreeNode): void {
@@ -388,5 +388,11 @@ export class FolderTreeComponent implements OnChanges {
 
   private getFileKey(fileId: number): string {
     return `file-${fileId}`;
+  }
+
+  private formatFolderName(name: string): string {
+    return name.trim().replace(/\S+/g, word =>
+      word.charAt(0).toLocaleUpperCase('pt-BR') + word.slice(1)
+    );
   }
 }

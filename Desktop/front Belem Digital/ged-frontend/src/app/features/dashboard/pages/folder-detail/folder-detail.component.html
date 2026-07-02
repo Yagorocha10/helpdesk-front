@@ -9,7 +9,7 @@
         class="btn-back">
         <mat-icon>arrow_back</mat-icon>
       </button>
-      <h2>{{ currentFolder?.name || 'Documentos' }}</h2>
+      <h2>{{ currentFolder ? formatFolderName(currentFolder.name) : 'Documentos' }}</h2>
     </div>
     
     <div class="actions-block">
@@ -69,7 +69,7 @@
             <mat-icon>folder</mat-icon>
           </div>
           <div class="folder-title-block">
-            <h3 class="folder-title">{{ sub.name }}</h3>
+            <h3 class="folder-title">{{ formatFolderName(sub.name) }}</h3>
           </div>
         </div>
       </div>

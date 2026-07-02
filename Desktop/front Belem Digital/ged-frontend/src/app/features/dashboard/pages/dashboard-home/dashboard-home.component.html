@@ -9,7 +9,34 @@
 
   <div class="ged-container">
     <div class="page-header">
-      <h2>Pastas de Documentos</h2>
+      <div>
+        <h2>Pastas de Documentos</h2>
+      </div>
+    </div>
+
+    <div class="toolbar-row">
+      <div class="search-container">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-icon matPrefix>search</mat-icon>
+          <input
+            matInput
+            [(ngModel)]="searchQuery"
+            (input)="onSearch()"
+            placeholder="Pesquisar pastas e arquivos..."
+            aria-label="Pesquisar pastas e arquivos">
+          <button
+            *ngIf="searchQuery"
+            type="button"
+            mat-icon-button
+            matSuffix
+            class="search-clear-btn"
+            aria-label="Limpar pesquisa"
+            (click)="clearSearch()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-form-field>
+      </div>
+
       <button type="button" mat-flat-button color="primary" class="btn-create" (click)="openCreateFolderDialog()">
         <mat-icon>create_new_folder</mat-icon>
         Nova Pasta
@@ -18,31 +45,60 @@
 
     <app-storage-card></app-storage-card>
 
-    <div class="search-container">
-      <mat-form-field appearance="outline" class="search-field">
-        <mat-label>Pesquisar pastas ou arquivos...</mat-label>
-        <input matInput [(ngModel)]="searchQuery" (input)="onSearch()">
-        <mat-icon matSuffix>search</mat-icon>
-      </mat-form-field>
-    </div>
+    <label
+      class="upload-dropzone"
+      [class.drag-active]="isUploadDragActive"
+      [class.uploading]="uploadingFiles"
+      for="dashboardUploadInput"
+      (dragover)="onUploadDragOver($event)"
+      (dragleave)="onUploadDragLeave($event)"
+      (drop)="onUploadDrop($event)">
+      <input id="dashboardUploadInput" type="file" multiple (change)="uploadFromInput($event)">
+      <span class="upload-icon">
+        <mat-icon>cloud_upload</mat-icon>
+      </span>
+      <span class="upload-text">{{ uploadingFiles ? 'Enviando arquivos...' : 'Arraste e solte arquivos aqui' }}</span>
+    </label>
 
     <div *ngIf="!isSearching" class="folders-grid">
       <mat-card class="folder-card" *ngFor="let folder of folders">
         <button
           type="button"
           mat-icon-button
-          class="folder-delete-btn"
-          title="Excluir pasta"
-          [disabled]="deletingFolderIds.has(folder.id)"
+          class="folder-menu-btn"
+          aria-label="Abrir menu de opções da pasta"
+          [matMenuTriggerFor]="folderOptionsMenu"
           (mousedown)="$event.stopPropagation()"
-          (click)="deleteFolder($event, folder)">
-          <mat-icon>delete</mat-icon>
+          (click)="$event.stopPropagation()">
+          <mat-icon>more_vert</mat-icon>
         </button>
-        <mat-card-content class="folder-content" (click)="goToFolder(folder.id)">
-          <mat-icon class="folder-icon">folder</mat-icon>
+        <mat-menu #folderOptionsMenu="matMenu" xPosition="before">
+          <button mat-menu-item (click)="renameFolder($event, folder)">
+            <mat-icon>drive_file_rename_outline</mat-icon>
+            <span>Renomear</span>
+          </button>
+          <button mat-menu-item (click)="moveFolder($event, folder)">
+            <mat-icon>drive_file_move</mat-icon>
+            <span>Mover</span>
+          </button>
+          <button mat-menu-item (click)="shareFolder($event, folder)">
+            <mat-icon>share</mat-icon>
+            <span>Compartilhar</span>
+          </button>
+          <button mat-menu-item [disabled]="deletingFolderIds.has(folder.id)" (click)="deleteFolder($event, folder)">
+            <mat-icon>delete</mat-icon>
+            <span>Excluir</span>
+          </button>
+        </mat-menu>
+
+        <mat-card-content class="folder-content" (click)="goToFolder(folder.id)" tabindex="0">
+          <div class="folder-icon-wrap">
+            <mat-icon class="folder-icon">folder</mat-icon>
+          </div>
           <div class="folder-info">
-            <span class="folder-name">{{ folder.name }}</span>
+            <span class="folder-name">{{ formatFolderName(folder.name) }}</span>
             <span class="folder-count">{{ folder.fileCount }} arquivos</span>
+            <span class="folder-updated">Atualizado recentemente</span>
           </div>
         </mat-card-content>
       </mat-card>
@@ -60,17 +116,40 @@
             <button
               type="button"
               mat-icon-button
-              class="folder-delete-btn"
-              title="Excluir pasta"
-              [disabled]="deletingFolderIds.has(folder.id)"
+              class="folder-menu-btn"
+              aria-label="Abrir menu de opções da pasta"
+              [matMenuTriggerFor]="searchFolderOptionsMenu"
               (mousedown)="$event.stopPropagation()"
-              (click)="deleteFolder($event, folder)">
-              <mat-icon>delete</mat-icon>
+              (click)="$event.stopPropagation()">
+              <mat-icon>more_vert</mat-icon>
             </button>
-            <mat-card-content class="folder-content" (click)="goToFolder(folder.id)">
-              <mat-icon class="folder-icon">folder</mat-icon>
+            <mat-menu #searchFolderOptionsMenu="matMenu" xPosition="before">
+              <button mat-menu-item (click)="renameFolder($event, folder)">
+                <mat-icon>drive_file_rename_outline</mat-icon>
+                <span>Renomear</span>
+              </button>
+              <button mat-menu-item (click)="moveFolder($event, folder)">
+                <mat-icon>drive_file_move</mat-icon>
+                <span>Mover</span>
+              </button>
+              <button mat-menu-item (click)="shareFolder($event, folder)">
+                <mat-icon>share</mat-icon>
+                <span>Compartilhar</span>
+              </button>
+              <button mat-menu-item [disabled]="deletingFolderIds.has(folder.id)" (click)="deleteFolder($event, folder)">
+                <mat-icon>delete</mat-icon>
+                <span>Excluir</span>
+              </button>
+            </mat-menu>
+
+            <mat-card-content class="folder-content" (click)="goToFolder(folder.id)" tabindex="0">
+              <div class="folder-icon-wrap">
+                <mat-icon class="folder-icon">folder</mat-icon>
+              </div>
               <div class="folder-info">
-                <span class="folder-name">{{ folder.name }}</span>
+                <span class="folder-name">{{ formatFolderName(folder.name) }}</span>
+                <span class="folder-count">{{ folder.fileCount }} arquivos</span>
+                <span class="folder-updated">Atualizado recentemente</span>
               </div>
             </mat-card-content>
           </mat-card>

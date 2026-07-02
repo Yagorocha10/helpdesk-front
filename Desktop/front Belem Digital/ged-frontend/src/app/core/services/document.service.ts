@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { catchError, forkJoin, map, Observable, of, Subject, tap } from 'rxjs';
+import { catchError, forkJoin, map, Observable, of, Subject, switchMap, tap } from 'rxjs';
 import { Folder } from '../models/folder.model';
 import { DocumentFile } from '../models/document-file.model';
 import { SearchResult } from '../models/search-result.model';
@@ -74,8 +74,21 @@ export class DocumentService {
   }
 
   renameFolder(folderId: number, name: string): Observable<Folder> {
-    return this.http.patch<FolderResponseDTO>(`${this.foldersUrl}/${folderId}`, { nome: name.trim() }).pipe(
-      map(folder => this.mapFolder(folder))
+    return this.getFolderById(folderId).pipe(
+      switchMap(folder => this.http.patch<FolderResponseDTO>(`${this.foldersUrl}/${folderId}`, {
+        nome: name.trim(),
+        parentId: folder?.parentId ?? null
+      })),
+      map(updatedFolder => this.mapFolder(updatedFolder))
+    );
+  }
+
+  moveFolder(folder: Folder, parentId: number | null): Observable<Folder> {
+    return this.http.patch<FolderResponseDTO>(`${this.foldersUrl}/${folder.id}`, {
+      nome: folder.name.trim(),
+      parentId
+    }).pipe(
+      map(updatedFolder => this.mapFolder(updatedFolder))
     );
   }
 

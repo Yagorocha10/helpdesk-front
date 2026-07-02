@@ -17,9 +17,11 @@ export class StorageCardComponent implements OnInit, OnDestroy {
   formattedTotalFiles = '0';
   totalFilesLabel = 'arquivos';
   formattedTotalSize = '0 bytes';
+  storagePercent = 0;
   isLoading = false;
   errorMessage = '';
 
+  private readonly visualStorageLimitBytes = 25 * 1024 * 1024;
   private readonly destroy$ = new Subject<void>();
 
   constructor(private documentService: DocumentService) {}
@@ -46,12 +48,14 @@ export class StorageCardComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: storageInfo => {
         const quantidadeArquivos = storageInfo.quantidadeArquivos ?? storageInfo.totalFiles ?? 0;
-        const espacoUtilizado = storageInfo.espacoUtilizado ?? this.formatBytes(storageInfo.totalBytes ?? storageInfo.totalSizeBytes ?? 0);
+        const totalBytes = storageInfo.totalBytes ?? storageInfo.totalSizeBytes ?? 0;
+        const espacoUtilizado = storageInfo.espacoUtilizado ?? this.formatBytes(totalBytes);
 
         this.storageInfo = storageInfo;
         this.formattedTotalFiles = this.formatNumber(quantidadeArquivos);
         this.totalFilesLabel = quantidadeArquivos === 1 ? 'arquivo' : 'arquivos';
         this.formattedTotalSize = espacoUtilizado;
+        this.storagePercent = this.calculateStoragePercent(totalBytes);
       },
       error: err => {
         console.error('Erro ao carregar informacoes de armazenamento:', err);
@@ -89,5 +93,13 @@ export class StorageCardComponent implements OnInit, OnDestroy {
       minimumFractionDigits: value >= 10 ? 0 : 1,
       maximumFractionDigits: value >= 10 ? 0 : 1
     }).format(value);
+  }
+
+  private calculateStoragePercent(bytes: number): number {
+    if (!Number.isFinite(bytes) || bytes <= 0) {
+      return 0;
+    }
+
+    return Math.min(Math.max(Math.round((bytes / this.visualStorageLimitBytes) * 100), 1), 100);
   }
 }

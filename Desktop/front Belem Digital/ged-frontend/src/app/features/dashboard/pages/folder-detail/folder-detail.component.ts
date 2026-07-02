@@ -135,6 +135,12 @@ export class FolderDetailComponent implements OnInit {
     return folder.id;
   }
 
+  formatFolderName(name: string): string {
+    return name.trim().replace(/\S+/g, word =>
+      word.charAt(0).toLocaleUpperCase('pt-BR') + word.slice(1)
+    );
+  }
+
   downloadFile(doc: DocumentFile): void {
     try {
       this.documentService.downloadDocument(doc);

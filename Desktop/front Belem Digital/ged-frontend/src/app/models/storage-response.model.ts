@@ -1,4 +1,8 @@
 export interface StorageResponse {
-  totalFiles: number;
-  totalSizeBytes: number;
+  totalBytes: number;
+  espacoUtilizado: string;
+  quantidadeArquivos: number;
+
+  totalFiles?: number;
+  totalSizeBytes?: number;
 }

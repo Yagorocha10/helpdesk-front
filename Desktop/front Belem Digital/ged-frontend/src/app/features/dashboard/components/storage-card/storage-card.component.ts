@@ -10,8 +10,9 @@ import { DocumentService } from 'src/app/core/services/document.service';
 })
 export class StorageCardComponent implements OnInit, OnDestroy {
   storageInfo: StorageResponse = {
-    totalFiles: 0,
-    totalSizeBytes: 0
+    totalBytes: 0,
+    espacoUtilizado: '0 bytes',
+    quantidadeArquivos: 0
   };
   formattedTotalFiles = '0';
   totalFilesLabel = 'arquivos';
@@ -44,10 +45,13 @@ export class StorageCardComponent implements OnInit, OnDestroy {
       finalize(() => this.isLoading = false)
     ).subscribe({
       next: storageInfo => {
+        const quantidadeArquivos = storageInfo.quantidadeArquivos ?? storageInfo.totalFiles ?? 0;
+        const espacoUtilizado = storageInfo.espacoUtilizado ?? this.formatBytes(storageInfo.totalBytes ?? storageInfo.totalSizeBytes ?? 0);
+
         this.storageInfo = storageInfo;
-        this.formattedTotalFiles = this.formatNumber(storageInfo.totalFiles);
-        this.totalFilesLabel = storageInfo.totalFiles === 1 ? 'arquivo' : 'arquivos';
-        this.formattedTotalSize = this.formatBytes(storageInfo.totalSizeBytes);
+        this.formattedTotalFiles = this.formatNumber(quantidadeArquivos);
+        this.totalFilesLabel = quantidadeArquivos === 1 ? 'arquivo' : 'arquivos';
+        this.formattedTotalSize = espacoUtilizado;
       },
       error: err => {
         console.error('Erro ao carregar informacoes de armazenamento:', err);

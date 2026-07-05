@@ -241,6 +241,13 @@
 
   .text-right { text-align: right; }
 
+  .actions-cell {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+
   .action-btn {
     color: #94a3b8;
     transition: color 0.2s;

@@ -102,22 +102,24 @@
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef width="100" class="text-right"></th>
         <td mat-cell *matCellDef="let doc" class="text-right">
-          <button type="button" mat-icon-button class="action-btn view" (click)="$event.stopPropagation(); viewFile(doc)" title="Visualizar">
-            <mat-icon>visibility</mat-icon>
-          </button>
-          <button type="button" mat-icon-button class="action-btn download" (click)="$event.stopPropagation(); downloadFile(doc)" title="Baixar">
-            <mat-icon>download</mat-icon>
-          </button>
-          <button
-            type="button"
-            mat-icon-button
-            class="action-btn delete"
-            [disabled]="deletingDocumentIds.has(doc.id)"
-            (mousedown)="$event.stopPropagation()"
-            (click)="deleteFile($event, doc)"
-            title="Excluir">
-            <mat-icon>delete</mat-icon>
-          </button>
+          <div class="actions-cell">
+            <button type="button" mat-icon-button class="action-btn view" (click)="$event.stopPropagation(); viewFile(doc)" title="Visualizar">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button type="button" mat-icon-button class="action-btn download" (click)="$event.stopPropagation(); downloadFile(doc)" title="Baixar">
+              <mat-icon>download</mat-icon>
+            </button>
+            <button
+              type="button"
+              mat-icon-button
+              class="action-btn delete"
+              [disabled]="deletingDocumentIds.has(doc.id)"
+              (mousedown)="$event.stopPropagation()"
+              (click)="deleteFile($event, doc)"
+              title="Excluir">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
         </td>
       </ng-container>
 

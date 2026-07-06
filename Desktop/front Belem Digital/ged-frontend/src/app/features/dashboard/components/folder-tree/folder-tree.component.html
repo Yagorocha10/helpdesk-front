@@ -37,10 +37,10 @@
       [attr.aria-expanded]="canExpand(node) ? isExpanded(node) : null"
       [attr.tabindex]="isActive(node) ? 0 : -1"
       [attr.data-node-key]="node.key"
+      [appFolderDrop]="getDropFolderId(node)"
+      [dropDisabled]="node.type !== 'folder'"
       (keydown)="onTreeKeydown($event, node)"
-      (contextmenu)="openContextMenu($event, node, contextMenuTrigger)"
-      (dragover)="onFileDragOver($event, node)"
-      (drop)="onFileDrop($event, node)">
+      (contextmenu)="openContextMenu($event, node, contextMenuTrigger)">
       <button
         type="button"
         mat-icon-button

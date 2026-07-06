@@ -12,6 +12,12 @@ import { FolderDetailComponent } from './pages/folder-detail/folder-detail.compo
 import { CreateFolderDialogComponent } from './components/create-folder-dialog/create-folder-dialog.component';
 import { FolderTreeComponent } from './components/folder-tree/folder-tree.component';
 import { StorageCardComponent } from './components/storage-card/storage-card.component';
+import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
+import { FolderSelectionModalComponent } from './components/folder-selection-modal/folder-selection-modal.component';
+import { TextInputDialogComponent } from './components/text-input-dialog/text-input-dialog.component';
+import { UploadDropzoneComponent } from './components/upload-dropzone/upload-dropzone.component';
+import { UploadProgressComponent } from './components/upload-progress/upload-progress.component';
+import { FolderDropDirective } from './directives/folder-drop.directive';
 
 @NgModule({
   declarations: [
@@ -20,7 +26,13 @@ import { StorageCardComponent } from './components/storage-card/storage-card.com
     DashboardHomeComponent,
     FolderDetailComponent,
     CreateFolderDialogComponent,
-    StorageCardComponent
+    StorageCardComponent,
+    FolderDropDirective,
+    UploadDropzoneComponent,
+    UploadProgressComponent,
+    FolderSelectionModalComponent,
+    TextInputDialogComponent,
+    ConfirmDialogComponent
   ],
   imports: [
     CommonModule,

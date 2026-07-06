@@ -1,19 +1,24 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { finalize, forkJoin } from 'rxjs';
+import { Subject, filter, finalize, switchMap, takeUntil } from 'rxjs';
 import { DocumentFile } from 'src/app/core/models/document-file.model';
 import { Folder } from 'src/app/core/models/folder.model';
 import { SearchResult } from 'src/app/core/models/search-result.model';
 import { DocumentService } from 'src/app/core/services/document.service';
+import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
 import { CreateFolderDialogComponent } from '../../components/create-folder-dialog/create-folder-dialog.component';
+import { FolderSelectionModalComponent } from '../../components/folder-selection-modal/folder-selection-modal.component';
+import { TextInputDialogComponent } from '../../components/text-input-dialog/text-input-dialog.component';
+import { UploadService } from '../../services/upload.service';
 
 @Component({
   selector: 'app-dashboard-home',
   templateUrl: './dashboard-home.component.html',
   styleUrls: ['./dashboard-home.component.scss']
 })
-export class DashboardHomeComponent implements OnInit {
+export class DashboardHomeComponent implements OnInit, OnDestroy {
   folders: Folder[] = [];
   searchResults: SearchResult = { folders: [], documents: [] };
   searchQuery = '';
@@ -21,17 +26,27 @@ export class DashboardHomeComponent implements OnInit {
   selectedFolderId: number | null = null;
   deletingFolderIds = new Set<number>();
   deletingDocumentIds = new Set<number>();
-  isUploadDragActive = false;
-  uploadingFiles = false;
+
+  private readonly destroy$ = new Subject<void>();
 
   constructor(
     private dialog: MatDialog,
     private documentService: DocumentService,
-    private router: Router
+    private router: Router,
+    private snackBar: MatSnackBar,
+    private uploadService: UploadService
   ) {}
 
   ngOnInit(): void {
     this.loadFolders();
+    this.uploadService.completed$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.refreshAfterFolderAction());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadFolders(): void {
@@ -41,6 +56,7 @@ export class DashboardHomeComponent implements OnInit {
       },
       error: err => {
         console.error('Erro ao carregar pastas:', err);
+        this.showError('Nao foi possivel carregar as pastas.');
       }
     });
   }
@@ -54,6 +70,7 @@ export class DashboardHomeComponent implements OnInit {
         },
         error: err => {
           console.error('Erro ao pesquisar:', err);
+          this.showError('Nao foi possivel pesquisar.');
         }
       });
     } else {
@@ -75,42 +92,13 @@ export class DashboardHomeComponent implements OnInit {
     );
   }
 
-  uploadFromInput(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const files = Array.from(input.files || []);
-
-    if (files.length > 0) {
-      this.uploadFilesToSelectedFolder(files);
-    }
-
-    input.value = '';
-  }
-
-  onUploadDragOver(event: DragEvent): void {
-    event.preventDefault();
-    this.isUploadDragActive = true;
-  }
-
-  onUploadDragLeave(event: DragEvent): void {
-    event.preventDefault();
-    this.isUploadDragActive = false;
-  }
-
-  onUploadDrop(event: DragEvent): void {
-    event.preventDefault();
-    this.isUploadDragActive = false;
-
-    const files = Array.from(event.dataTransfer?.files || []);
-    this.uploadFilesToSelectedFolder(files);
-  }
-
   openCreateFolderDialog(): void {
     const dialogRef = this.dialog.open(CreateFolderDialogComponent, {
       width: '400px',
       disableClose: true
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().pipe(takeUntil(this.destroy$)).subscribe(result => {
       if (result && result.name) {
         this.documentService.addFolder(result.name, null).subscribe({
           next: folder => {
@@ -121,7 +109,7 @@ export class DashboardHomeComponent implements OnInit {
           },
           error: err => {
             console.error('Erro ao criar pasta:', err);
-            alert('Não foi possível criar a pasta. Verifique se o backend está rodando.');
+            this.showError('Nao foi possivel criar a pasta. Verifique se o backend esta rodando.');
           }
         });
       }
@@ -137,10 +125,22 @@ export class DashboardHomeComponent implements OnInit {
       return;
     }
 
-    this.deletingFolderIds.add(folderId);
-
-    this.documentService.deleteFolder(folderId).pipe(
-      finalize(() => this.deletingFolderIds.delete(folderId))
+    this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: {
+        title: 'Excluir pasta',
+        message: `Excluir a pasta "${this.formatFolderName(folder.name)}"?`,
+        confirmText: 'Excluir'
+      }
+    }).afterClosed().pipe(
+      filter(Boolean),
+      switchMap(() => {
+        this.deletingFolderIds.add(folderId);
+        return this.documentService.deleteFolder(folderId).pipe(
+          finalize(() => this.deletingFolderIds.delete(folderId))
+        );
+      }),
+      takeUntil(this.destroy$)
     ).subscribe({
       next: () => {
         this.folders = this.folders.filter(item => String(item.id) !== String(folderId));
@@ -148,11 +148,11 @@ export class DashboardHomeComponent implements OnInit {
           folders: this.searchResults.folders.filter(item => String(item.id) !== String(folderId)),
           documents: this.searchResults.documents.filter(item => String(item.folderId) !== String(folderId))
         };
-        this.isSearching && this.searchQuery.trim() ? this.onSearch() : this.loadFolders();
+        this.refreshAfterFolderAction();
       },
       error: err => {
         console.error('Erro ao excluir pasta:', err);
-        alert(`Não foi possível excluir a pasta. Status: ${err.status || 'sem resposta do backend'}.`);
+        this.showError(`Nao foi possivel excluir a pasta. Status: ${err.status || 'sem resposta do backend'}.`);
       }
     });
   }
@@ -161,19 +161,23 @@ export class DashboardHomeComponent implements OnInit {
     event.preventDefault();
     event.stopPropagation();
 
-    const name = window.prompt('Novo nome da pasta', folder.name);
-
-    if (!name?.trim() || name.trim() === folder.name) {
-      return;
-    }
-
-    this.documentService.renameFolder(folder.id, name).subscribe({
-      next: () => {
-        this.refreshAfterFolderAction();
-      },
+    this.dialog.open(TextInputDialogComponent, {
+      width: '420px',
+      data: {
+        title: 'Renomear pasta',
+        label: 'Novo nome da pasta',
+        value: folder.name,
+        confirmText: 'Salvar'
+      }
+    }).afterClosed().pipe(
+      filter((name): name is string => !!name?.trim() && name.trim() !== folder.name),
+      switchMap(name => this.documentService.renameFolder(folder.id, name)),
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: () => this.refreshAfterFolderAction(),
       error: err => {
         console.error('Erro ao renomear pasta:', err);
-        alert('Nao foi possivel renomear a pasta.');
+        this.showError('Nao foi possivel renomear a pasta.');
       }
     });
   }
@@ -182,19 +186,18 @@ export class DashboardHomeComponent implements OnInit {
     event.preventDefault();
     event.stopPropagation();
 
-    const destinationId = this.askForDestinationFolder(folder, 'Mover para qual pasta?');
-
-    if (destinationId === undefined) {
-      return;
-    }
-
-    this.documentService.moveFolder(folder, destinationId).subscribe({
-      next: () => {
-        this.refreshAfterFolderAction();
-      },
+    this.dialog.open(FolderSelectionModalComponent, {
+      width: '520px',
+      maxWidth: 'calc(100vw - 32px)'
+    }).afterClosed().pipe(
+      filter((destinationId): destinationId is number => typeof destinationId === 'number' && destinationId !== folder.id),
+      switchMap(destinationId => this.documentService.moveFolder(folder, destinationId)),
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: () => this.refreshAfterFolderAction(),
       error: err => {
         console.error('Erro ao mover pasta:', err);
-        alert('Nao foi possivel mover a pasta.');
+        this.showError('Nao foi possivel mover a pasta.');
       }
     });
   }
@@ -207,12 +210,12 @@ export class DashboardHomeComponent implements OnInit {
 
     if (navigator.clipboard) {
       navigator.clipboard.writeText(url)
-        .then(() => alert('Link da pasta copiado.'))
-        .catch(() => window.prompt('Copie o link da pasta:', url));
+        .then(() => this.snackBar.open('Link da pasta copiado.', 'Fechar', { duration: 3000 }))
+        .catch(() => this.snackBar.open(url, 'Fechar', { duration: 8000 }));
       return;
     }
 
-    window.prompt('Copie o link da pasta:', url);
+    this.snackBar.open(url, 'Fechar', { duration: 8000 });
   }
 
   goToFolder(folderId: number): void {
@@ -229,7 +232,7 @@ export class DashboardHomeComponent implements OnInit {
       this.documentService.downloadDocument(doc);
     } catch (err) {
       console.error('Erro ao baixar arquivo:', err);
-      alert('Não foi possível baixar o arquivo.');
+      this.showError('Nao foi possivel baixar o arquivo.');
     }
   }
 
@@ -238,7 +241,7 @@ export class DashboardHomeComponent implements OnInit {
       this.documentService.viewDocument(doc);
     } catch (err) {
       console.error('Erro ao visualizar arquivo:', err);
-      alert('Não foi possível visualizar o arquivo.');
+      this.showError('Nao foi possivel visualizar o arquivo.');
     }
   }
 
@@ -251,10 +254,22 @@ export class DashboardHomeComponent implements OnInit {
       return;
     }
 
-    this.deletingDocumentIds.add(docId);
-
-    this.documentService.deleteDocument(docId).pipe(
-      finalize(() => this.deletingDocumentIds.delete(docId))
+    this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: {
+        title: 'Excluir arquivo',
+        message: `Excluir o arquivo "${doc.name}"?`,
+        confirmText: 'Excluir'
+      }
+    }).afterClosed().pipe(
+      filter(Boolean),
+      switchMap(() => {
+        this.deletingDocumentIds.add(docId);
+        return this.documentService.deleteDocument(docId).pipe(
+          finalize(() => this.deletingDocumentIds.delete(docId))
+        );
+      }),
+      takeUntil(this.destroy$)
     ).subscribe({
       next: () => {
         this.searchResults = {
@@ -265,68 +280,17 @@ export class DashboardHomeComponent implements OnInit {
       },
       error: err => {
         console.error('Erro ao excluir arquivo:', err);
-        alert(`Não foi possível excluir o arquivo. Status: ${err.status || 'sem resposta do backend'}.`);
+        this.showError(`Nao foi possivel excluir o arquivo. Status: ${err.status || 'sem resposta do backend'}.`);
       }
     });
   }
 
-  private uploadFilesToSelectedFolder(files: File[]): void {
-    if (files.length === 0 || this.uploadingFiles) {
-      return;
-    }
-
-    const folderId = this.askForDestinationFolder(undefined, 'Enviar arquivos para qual pasta?');
-
-    if (folderId === undefined || folderId === null) {
-      return;
-    }
-
-    this.uploadingFiles = true;
-
-    forkJoin(files.map(file => this.documentService.uploadDocument(folderId, file))).pipe(
-      finalize(() => this.uploadingFiles = false)
-    ).subscribe({
-      next: () => {
-        this.refreshAfterFolderAction();
-      },
-      error: err => {
-        console.error('Erro ao enviar arquivos:', err);
-        alert('Nao foi possivel enviar os arquivos.');
-      }
-    });
+  trackByFolderId(_index: number, folder: Folder): number {
+    return folder.id;
   }
 
-  private askForDestinationFolder(currentFolder: Folder | undefined, title: string): number | null | undefined {
-    const folders = this.flattenFolders(this.folders)
-      .filter(folder => !currentFolder || folder.id !== currentFolder.id);
-
-    if (folders.length === 0) {
-      alert('Crie uma pasta antes de usar esta acao.');
-      return undefined;
-    }
-
-    const options = [
-      '0 - Raiz',
-      ...folders.map(folder => `${folder.id} - ${this.formatFolderName(folder.name)}`)
-    ].join('\n');
-    const response = window.prompt(`${title}\n\n${options}`, currentFolder ? '0' : String(folders[0].id));
-
-    if (response === null) {
-      return undefined;
-    }
-
-    const destinationId = Number(response.trim());
-
-    if (destinationId === 0) {
-      return null;
-    }
-
-    if (!folders.some(folder => folder.id === destinationId)) {
-      alert('Pasta destino invalida.');
-      return undefined;
-    }
-
-    return destinationId;
+  trackByDocumentId(_index: number, document: DocumentFile): number {
+    return document.id;
   }
 
   private refreshAfterFolderAction(): void {
@@ -338,7 +302,7 @@ export class DashboardHomeComponent implements OnInit {
     this.loadFolders();
   }
 
-  private flattenFolders(folders: Folder[]): Folder[] {
-    return folders.flatMap(folder => [folder, ...this.flattenFolders(folder.children || [])]);
+  private showError(message: string): void {
+    this.snackBar.open(message, 'Fechar', { duration: 5000 });
   }
 }

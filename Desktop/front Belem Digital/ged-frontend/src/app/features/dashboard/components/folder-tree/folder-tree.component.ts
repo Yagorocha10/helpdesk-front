@@ -1,9 +1,14 @@
-import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { MatMenuTrigger } from '@angular/material/menu';
-import { finalize, forkJoin } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Subject, filter, finalize, forkJoin, switchMap, takeUntil } from 'rxjs';
 import { DocumentFile } from '../../../../core/models/document-file.model';
 import { Folder } from '../../../../core/models/folder.model';
 import { DocumentService } from '../../../../core/services/document.service';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { TextInputDialogComponent } from '../text-input-dialog/text-input-dialog.component';
+import { UploadService } from '../../services/upload.service';
 
 type FolderTreeNode = FolderNode | FileNode;
 
@@ -26,7 +31,7 @@ interface FileNode {
   templateUrl: './folder-tree.component.html',
   styleUrls: ['./folder-tree.component.scss']
 })
-export class FolderTreeComponent implements OnChanges {
+export class FolderTreeComponent implements OnChanges, OnDestroy {
   @Input() folders: Folder[] = [];
   @Input() selectedFolderId?: number | null;
 
@@ -47,7 +52,18 @@ export class FolderTreeComponent implements OnChanges {
   contextFolder?: Folder;
   isCollapsed = false;
 
-  constructor(private documentService: DocumentService) {}
+  private readonly destroy$ = new Subject<void>();
+
+  constructor(
+    private dialog: MatDialog,
+    private documentService: DocumentService,
+    private snackBar: MatSnackBar,
+    private uploadService: UploadService
+  ) {
+    this.uploadService.completed$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(folderId => this.refreshUploadedFolder(folderId));
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['folders']) {
@@ -59,6 +75,11 @@ export class FolderTreeComponent implements OnChanges {
     if (changes['selectedFolderId'] && this.selectedFolderId) {
       this.activeNodeKey = this.getFolderKey(this.selectedFolderId);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   toggleSidebar(): void {
@@ -87,6 +108,10 @@ export class FolderTreeComponent implements OnChanges {
 
   getNodeName(node: FolderTreeNode): string {
     return node.type === 'folder' ? this.formatFolderName(node.folder.name) : node.file.name;
+  }
+
+  getDropFolderId(node: FolderTreeNode): number | null {
+    return node.type === 'folder' ? node.folder.id : null;
   }
 
   toggleFolder(event: Event, node: FolderTreeNode): void {
@@ -127,14 +152,22 @@ export class FolderTreeComponent implements OnChanges {
       return;
     }
 
-    const name = window.prompt('Nome da subpasta');
-    if (!name?.trim()) {
-      return;
-    }
-
-    this.actionFolderIds.add(folder.id);
-    this.documentService.addFolder(name, folder.id).pipe(
-      finalize(() => this.actionFolderIds.delete(folder.id))
+    this.dialog.open(TextInputDialogComponent, {
+      width: '420px',
+      data: {
+        title: 'Nova Subpasta',
+        label: 'Nome da subpasta',
+        confirmText: 'Criar'
+      }
+    }).afterClosed().pipe(
+      filter((name): name is string => !!name?.trim()),
+      switchMap(name => {
+        this.actionFolderIds.add(folder.id);
+        return this.documentService.addFolder(name, folder.id).pipe(
+          finalize(() => this.actionFolderIds.delete(folder.id))
+        );
+      }),
+      takeUntil(this.destroy$)
     ).subscribe({
       next: createdFolder => {
         folder.children = [...(folder.children || []), createdFolder];
@@ -146,7 +179,7 @@ export class FolderTreeComponent implements OnChanges {
       },
       error: err => {
         console.error('Erro ao criar subpasta:', err);
-        alert('Não foi possível criar a subpasta.');
+        this.showError('Nao foi possivel criar a subpasta.');
       }
     });
   }
@@ -156,14 +189,23 @@ export class FolderTreeComponent implements OnChanges {
       return;
     }
 
-    const name = window.prompt('Novo nome da pasta', folder.name);
-    if (!name?.trim() || name.trim() === folder.name) {
-      return;
-    }
-
-    this.actionFolderIds.add(folder.id);
-    this.documentService.renameFolder(folder.id, name).pipe(
-      finalize(() => this.actionFolderIds.delete(folder.id))
+    this.dialog.open(TextInputDialogComponent, {
+      width: '420px',
+      data: {
+        title: 'Renomear pasta',
+        label: 'Novo nome da pasta',
+        value: folder.name,
+        confirmText: 'Salvar'
+      }
+    }).afterClosed().pipe(
+      filter((name): name is string => !!name?.trim() && name.trim() !== folder.name),
+      switchMap(name => {
+        this.actionFolderIds.add(folder.id);
+        return this.documentService.renameFolder(folder.id, name).pipe(
+          finalize(() => this.actionFolderIds.delete(folder.id))
+        );
+      }),
+      takeUntil(this.destroy$)
     ).subscribe({
       next: renamedFolder => {
         folder.name = renamedFolder.name;
@@ -172,7 +214,7 @@ export class FolderTreeComponent implements OnChanges {
       },
       error: err => {
         console.error('Erro ao renomear pasta:', err);
-        alert('Não foi possível renomear a pasta.');
+        this.showError('Nao foi possivel renomear a pasta.');
       }
     });
   }
@@ -182,13 +224,22 @@ export class FolderTreeComponent implements OnChanges {
       return;
     }
 
-    if (!window.confirm(`Excluir a pasta "${folder.name}"?`)) {
-      return;
-    }
-
-    this.actionFolderIds.add(folder.id);
-    this.documentService.deleteFolder(folder.id).pipe(
-      finalize(() => this.actionFolderIds.delete(folder.id))
+    this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: {
+        title: 'Excluir pasta',
+        message: `Excluir a pasta "${this.formatFolderName(folder.name)}"?`,
+        confirmText: 'Excluir'
+      }
+    }).afterClosed().pipe(
+      filter(Boolean),
+      switchMap(() => {
+        this.actionFolderIds.add(folder.id);
+        return this.documentService.deleteFolder(folder.id).pipe(
+          finalize(() => this.actionFolderIds.delete(folder.id))
+        );
+      }),
+      takeUntil(this.destroy$)
     ).subscribe({
       next: () => {
         this.removeFolder(folder.id, this.rootFolders);
@@ -200,7 +251,7 @@ export class FolderTreeComponent implements OnChanges {
       },
       error: err => {
         console.error('Erro ao excluir pasta:', err);
-        alert('Não foi possível excluir a pasta.');
+        this.showError('Nao foi possivel excluir a pasta.');
       }
     });
   }
@@ -233,25 +284,6 @@ export class FolderTreeComponent implements OnChanges {
         this.selectNode(node);
         break;
     }
-  }
-
-  onFileDragOver(event: DragEvent, node: FolderTreeNode): void {
-    if (node.type !== 'folder') {
-      return;
-    }
-
-    event.preventDefault();
-    this.activeNodeKey = node.key;
-  }
-
-  onFileDrop(event: DragEvent, node: FolderTreeNode): void {
-    if (node.type !== 'folder') {
-      return;
-    }
-
-    event.preventDefault();
-    this.activeNodeKey = node.key;
-    // Futuro: enviar arquivos soltos aqui para POST /folders/{node.folder.id}/documents.
   }
 
   trackByNodeKey(_index: number, node: FolderTreeNode): string {
@@ -290,7 +322,7 @@ export class FolderTreeComponent implements OnChanges {
       },
       error: err => {
         console.error('Erro ao carregar conteudo da pasta:', err);
-        alert('Não foi possível carregar subpastas e arquivos.');
+        this.showError('Nao foi possivel carregar subpastas e arquivos.');
       }
     });
   }
@@ -298,6 +330,30 @@ export class FolderTreeComponent implements OnChanges {
   private collapseFolder(folder: Folder): void {
     this.expandedFolderIds.delete(folder.id);
     this.rebuildVisibleNodes();
+  }
+
+  private refreshUploadedFolder(folderId: number): void {
+    const folder = this.findFolder(folderId, this.rootFolders);
+
+    if (!folder || !this.loadedFolderIds.has(folderId)) {
+      this.treeChanged.emit();
+      return;
+    }
+
+    forkJoin({
+      children: this.documentService.getFolders(folder.id),
+      files: this.documentService.getDocumentsByFolder(folder.id)
+    }).subscribe({
+      next: ({ children, files }) => {
+        folder.children = children;
+        folder.files = files;
+        folder.fileCount = files.length;
+        this.leafFolderIds.delete(folder.id);
+        this.rebuildVisibleNodes();
+        this.treeChanged.emit();
+      },
+      error: () => this.treeChanged.emit()
+    });
   }
 
   private rebuildVisibleNodes(): void {
@@ -349,6 +405,21 @@ export class FolderTreeComponent implements OnChanges {
     });
   }
 
+  private findFolder(folderId: number, folders: Folder[]): Folder | undefined {
+    for (const folder of folders) {
+      if (folder.id === folderId) {
+        return folder;
+      }
+
+      const child = this.findFolder(folderId, folder.children || []);
+      if (child) {
+        return child;
+      }
+    }
+
+    return undefined;
+  }
+
   private removeFolder(folderId: number, folders: Folder[]): boolean {
     const index = folders.findIndex(folder => folder.id === folderId);
 
@@ -394,5 +465,9 @@ export class FolderTreeComponent implements OnChanges {
     return name.trim().replace(/\S+/g, word =>
       word.charAt(0).toLocaleUpperCase('pt-BR') + word.slice(1)
     );
+  }
+
+  private showError(message: string): void {
+    this.snackBar.open(message, 'Fechar', { duration: 5000 });
   }
 }

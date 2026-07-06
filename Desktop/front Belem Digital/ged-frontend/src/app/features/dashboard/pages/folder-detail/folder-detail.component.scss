@@ -44,10 +44,8 @@
       border-radius: 8px;
     }
 
-    .btn-upload {
-      border-radius: 8px;
-      font-weight: 500;
-      background-color: #1e293b;
+    .detail-upload-dropzone {
+      width: 210px;
     }
   }
 }
@@ -122,7 +120,10 @@
   min-height: auto;
   transition: border-color 0.2s;
 
-  &:hover { border-color: #cbd5e1; }
+  &:hover,
+  &.upload-drag-active {
+    border-color: #2563eb;
+  }
 
   &:hover .subfolder-delete-btn {
     opacity: 1;
@@ -212,6 +213,11 @@
 
   .file-row {
     cursor: pointer;
+  }
+
+  tr.mat-row.upload-drag-active {
+    background: #eff6ff;
+    box-shadow: inset 3px 0 0 #2563eb;
   }
 
   td.mat-cell {

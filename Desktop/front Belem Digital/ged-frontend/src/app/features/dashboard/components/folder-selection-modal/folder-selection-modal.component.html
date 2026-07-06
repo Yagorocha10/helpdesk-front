@@ -1,0 +1,63 @@
+<h2 mat-dialog-title>Enviar Arquivos</h2>
+
+<mat-dialog-content class="folder-picker">
+  <p class="description">Selecione a pasta onde os arquivos serao enviados.</p>
+
+  <mat-form-field appearance="outline" class="search-field">
+    <mat-icon matPrefix>search</mat-icon>
+    <mat-label>Pesquisar</mat-label>
+    <input
+      matInput
+      [(ngModel)]="searchQuery"
+      (input)="onSearchChange()"
+      placeholder="Pesquisar pastas..."
+      aria-label="Pesquisar pastas">
+  </mat-form-field>
+
+  <div class="folder-tree" role="tree" aria-label="Pastas disponiveis para upload">
+    <div *ngIf="isLoading" class="state-row">
+      <mat-icon>sync</mat-icon>
+      <span>Carregando pastas...</span>
+    </div>
+
+    <div *ngIf="!isLoading && visibleNodes.length === 0" class="state-row">
+      <mat-icon>folder_off</mat-icon>
+      <span>Nenhuma pasta encontrada</span>
+    </div>
+
+    <button
+      *ngFor="let node of visibleNodes; trackBy: trackByFolderId"
+      type="button"
+      class="folder-node"
+      role="treeitem"
+      [class.selected]="selectedFolderId === node.folder.id"
+      [style.padding-left.px]="12 + node.level * 18"
+      [attr.aria-selected]="selectedFolderId === node.folder.id"
+      (click)="selectFolder(node.folder)"
+      (keyup.enter)="confirmSelection()">
+      <span
+        class="toggle"
+        [class.hidden]="searchQuery.trim()"
+        (click)="toggleFolder($event, node.folder)"
+        aria-hidden="true">
+        <mat-icon>{{ isLoadingFolder(node.folder) ? 'sync' : isExpanded(node.folder) ? 'expand_more' : 'chevron_right' }}</mat-icon>
+      </span>
+      <mat-icon class="folder-icon">{{ isExpanded(node.folder) ? 'folder_open' : 'folder' }}</mat-icon>
+      <span class="folder-name">{{ formatFolderName(node.folder.name) }}</span>
+    </button>
+  </div>
+
+  <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button type="button" mat-button (click)="cancel()">Cancelar</button>
+  <button
+    type="button"
+    mat-flat-button
+    color="primary"
+    [disabled]="selectedFolderId === null"
+    (click)="confirmSelection()">
+    Enviar
+  </button>
+</mat-dialog-actions>

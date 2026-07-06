@@ -11,6 +11,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 const MATERIAL_MODULES = [
   MatCardModule,
@@ -24,7 +26,9 @@ const MATERIAL_MODULES = [
   MatInputModule,
   MatDialogModule,
   MatTableModule,
-  MatMenuModule
+  MatMenuModule,
+  MatSnackBarModule,
+  MatTooltipModule
 ];
 
 @NgModule({

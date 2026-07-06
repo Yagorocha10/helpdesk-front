@@ -1,0 +1,25 @@
+<section class="upload-progress" *ngIf="visibleQueue$ | async as queue" [class.visible]="queue.length > 0" aria-live="polite">
+  <ng-container *ngIf="queue.length > 0">
+    <div class="progress-header">
+      <div>
+        <h3>Uploads</h3>
+        <span>{{ queue.length }} item(ns) recentes</span>
+      </div>
+      <button type="button" mat-icon-button aria-label="Limpar uploads concluidos" (click)="clearCompleted()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="progress-list">
+      <div class="progress-item" *ngFor="let item of queue; trackBy: trackByItemId" [class.error]="item.status === 'error'">
+        <div class="progress-row">
+          <mat-icon>{{ item.status === 'success' ? 'check_circle' : item.status === 'error' ? 'error' : 'upload_file' }}</mat-icon>
+          <span class="file-name">{{ item.fileName }}</span>
+          <span class="status">{{ item.status === 'uploading' ? item.progress + '%' : item.status }}</span>
+        </div>
+        <mat-progress-bar [color]="item.status === 'error' ? 'warn' : 'primary'" mode="determinate" [value]="item.progress"></mat-progress-bar>
+        <span *ngIf="item.error" class="error-message">{{ item.error }}</span>
+      </div>
+    </div>
+  </ng-container>
+</section>

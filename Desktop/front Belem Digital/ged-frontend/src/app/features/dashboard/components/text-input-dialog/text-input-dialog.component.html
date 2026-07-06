@@ -1,0 +1,17 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+
+<mat-dialog-content [formGroup]="form">
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ data.label }}</mat-label>
+    <input matInput formControlName="value" (keyup.enter)="confirm()">
+    <mat-error *ngIf="form.get('value')?.hasError('required')">Campo obrigatorio.</mat-error>
+    <mat-error *ngIf="form.get('value')?.hasError('minlength')">Informe pelo menos 2 caracteres.</mat-error>
+  </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button type="button" mat-button (click)="cancel()">Cancelar</button>
+  <button type="button" mat-flat-button color="primary" [disabled]="form.invalid" (click)="confirm()">
+    {{ data.confirmText || 'Salvar' }}
+  </button>
+</mat-dialog-actions>

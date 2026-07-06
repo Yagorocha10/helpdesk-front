@@ -45,23 +45,16 @@
 
     <app-storage-card></app-storage-card>
 
-    <label
-      class="upload-dropzone"
-      [class.drag-active]="isUploadDragActive"
-      [class.uploading]="uploadingFiles"
-      for="dashboardUploadInput"
-      (dragover)="onUploadDragOver($event)"
-      (dragleave)="onUploadDragLeave($event)"
-      (drop)="onUploadDrop($event)">
-      <input id="dashboardUploadInput" type="file" multiple (change)="uploadFromInput($event)">
-      <span class="upload-icon">
-        <mat-icon>cloud_upload</mat-icon>
-      </span>
-      <span class="upload-text">{{ uploadingFiles ? 'Enviando arquivos...' : 'Arraste e solte arquivos aqui' }}</span>
-    </label>
+    <app-upload-dropzone
+      label="Solte arquivos aqui; se nao houver pasta aberta, escolha o destino no modal"
+      hint="Upload de Arquivo">
+    </app-upload-dropzone>
 
     <div *ngIf="!isSearching" class="folders-grid">
-      <mat-card class="folder-card" *ngFor="let folder of folders">
+      <mat-card
+        class="folder-card"
+        *ngFor="let folder of folders; trackBy: trackByFolderId"
+        [appFolderDrop]="folder.id">
         <button
           type="button"
           mat-icon-button
@@ -112,7 +105,10 @@
       <div *ngIf="searchResults.folders.length > 0">
         <h3>Pastas Encontradas</h3>
         <div class="folders-grid">
-          <mat-card class="folder-card" *ngFor="let folder of searchResults.folders">
+          <mat-card
+            class="folder-card"
+            *ngFor="let folder of searchResults.folders; trackBy: trackByFolderId"
+            [appFolderDrop]="folder.id">
             <button
               type="button"
               mat-icon-button
@@ -159,7 +155,7 @@
       <div *ngIf="searchResults.documents.length > 0" class="docs-result-section">
         <h3>Arquivos Encontrados</h3>
         <div class="search-docs-list">
-          <div *ngFor="let doc of searchResults.documents" class="search-doc-item">
+          <div *ngFor="let doc of searchResults.documents; trackBy: trackByDocumentId" class="search-doc-item">
             <div class="doc-details" (click)="viewFile(doc)">
               <mat-icon>description</mat-icon>
               <span>{{ doc.name }}</span>
@@ -189,3 +185,5 @@
     </div>
   </div>
 </div>
+
+<app-upload-progress></app-upload-progress>

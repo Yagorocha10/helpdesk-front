@@ -1,0 +1,16 @@
+<button
+  type="button"
+  class="upload-dropzone"
+  [appFolderDrop]="folderId"
+  [class.uploading]="isUploading$ | async"
+  (click)="openFilePicker()"
+  aria-label="Selecionar arquivos para upload">
+  <input #fileInput type="file" multiple (change)="onFileSelected($event)" tabindex="-1" aria-hidden="true">
+  <span class="upload-icon">
+    <mat-icon>cloud_upload</mat-icon>
+  </span>
+  <span class="upload-copy">
+    <span class="upload-title">{{ hint }}</span>
+    <span class="upload-text">{{ (isUploading$ | async) ? 'Enviando arquivos...' : label }}</span>
+  </span>
+</button>

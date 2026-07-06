@@ -1,4 +1,4 @@
-<div class="ged-container">
+<div class="ged-container" [appFolderDrop]="folderId">
   
   <div class="detail-header">
     <div class="title-block">
@@ -17,11 +17,12 @@
         <mat-icon>create_new_folder</mat-icon>
         Nova Subpasta
       </button>
-      <button type="button" mat-flat-button color="primary" class="btn-upload" (click)="fileInput.click()">
-        <mat-icon>cloud_upload</mat-icon>
-        Upload de Arquivo
-      </button>
-      <input #fileInput type="file" (change)="onFileSelected($event)" style="display: none;" />
+      <app-upload-dropzone
+        class="detail-upload-dropzone"
+        [folderId]="folderId"
+        label="Solte arquivos nesta pasta"
+        hint="Upload de Arquivo">
+      </app-upload-dropzone>
     </div>
   </div>
 
@@ -53,6 +54,7 @@
       <div
         class="custom-folder-card mini"
         *ngFor="let sub of subFolders; trackBy: trackByFolderId"
+        [appFolderDrop]="sub.id"
         [routerLink]="['/dashboard/folder', sub.id]">
         <button
           type="button"
@@ -124,7 +126,7 @@
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row class="file-row" *matRowDef="let row; columns: displayedColumns;"></tr>
+      <tr mat-row class="file-row" *matRowDef="let row; columns: displayedColumns;" [appFolderDrop]="folderId"></tr>
 
       <tr class="mat-row" *matNoDataRow>
         <td class="mat-cell empty-table-message" colspan="4">
@@ -135,3 +137,5 @@
   </div>
 
 </div>
+
+<app-upload-progress></app-upload-progress>

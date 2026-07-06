@@ -1,25 +1,32 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { DashboardLayoutComponent } from './features/dashboard/components/dashboard-layout/dashboard-layout.component';
 import { DashboardHomeComponent } from './features/dashboard/pages/dashboard-home/dashboard-home.component';
 import { FolderDetailComponent } from './features/dashboard/pages/folder-detail/folder-detail.component';
 
 const routes: Routes = [
   {
-    path: 'dashboard/folder/:id',
-    component: FolderDetailComponent
-  },
-  {
     path: 'dashboard',
-    component: DashboardHomeComponent
+    component: DashboardLayoutComponent,
+    children: [
+      {
+        path: '',
+        component: DashboardHomeComponent
+      },
+      {
+        path: 'folder/:id',
+        component: FolderDetailComponent
+      }
+    ]
   },
   {
     path: '',
-    component: DashboardHomeComponent,
+    redirectTo: 'dashboard',
     pathMatch: 'full'
   },
   {
     path: '**',
-    redirectTo: ''
+    redirectTo: 'dashboard'
   }
 ];
 

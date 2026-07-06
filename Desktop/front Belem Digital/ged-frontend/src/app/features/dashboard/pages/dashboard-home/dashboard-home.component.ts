@@ -23,7 +23,6 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   searchResults: SearchResult = { folders: [], documents: [] };
   searchQuery = '';
   isSearching = false;
-  selectedFolderId: number | null = null;
   deletingFolderIds = new Set<number>();
   deletingDocumentIds = new Set<number>();
 
@@ -220,11 +219,6 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
 
   goToFolder(folderId: number): void {
     this.router.navigate(['/dashboard/folder', folderId]);
-  }
-
-  onFolderTreeSelected(folder: Folder): void {
-    this.selectedFolderId = folder.id;
-    this.goToFolder(folder.id);
   }
 
   downloadFile(doc: DocumentFile): void {

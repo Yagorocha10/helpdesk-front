@@ -1,0 +1,51 @@
+<section class="dashboard-shell">
+  <header class="app-header">
+    <mat-toolbar color="primary" class="header-toolbar">
+      <div class="logo-container">
+        <div class="logo-box">
+          <mat-icon>description</mat-icon>
+        </div>
+        <div class="brand-text">
+          <span class="title">BELÉM DIGITAL Docs</span>
+          <span class="subtitle">Gestão Centralizada de Documentos</span>
+        </div>
+      </div>
+
+      <nav class="nav-links" aria-label="Navegacao principal">
+        <a mat-button routerLink="/dashboard" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">
+          Dashboard
+        </a>
+      </nav>
+    </mat-toolbar>
+  </header>
+
+  <div class="dashboard-layout">
+    <app-folder-tree
+      class="dashboard-sidebar"
+      [folders]="folders"
+      [selectedFolderId]="selectedFolderId"
+      (folderSelected)="onFolderTreeSelected($event)"
+      (treeChanged)="loadFolders()">
+    </app-folder-tree>
+
+    <main class="dashboard-main">
+      <nav class="breadcrumb-bar" aria-label="Breadcrumb">
+        <ng-container *ngFor="let item of breadcrumbItems; let last = last">
+          <a
+            [routerLink]="item.commands"
+            [class.current]="last"
+            [attr.aria-current]="last ? 'page' : null">
+            {{ item.label }}
+          </a>
+          <mat-icon *ngIf="!last">chevron_right</mat-icon>
+        </ng-container>
+      </nav>
+
+      <section class="dashboard-content">
+        <router-outlet></router-outlet>
+      </section>
+    </main>
+  </div>
+
+  <app-upload-progress></app-upload-progress>
+</section>

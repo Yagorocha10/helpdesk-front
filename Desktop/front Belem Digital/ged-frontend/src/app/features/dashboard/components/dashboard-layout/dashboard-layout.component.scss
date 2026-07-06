@@ -1,0 +1,164 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+.dashboard-shell {
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+.app-header {
+  background: #ffffff;
+  border-bottom: 1px solid #edf0f3;
+}
+
+.header-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 30px;
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+.logo-box mat-icon {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.brand-text .title {
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.brand-text .subtitle {
+  color: #9ca3af;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.nav-links a {
+  min-height: 32px;
+  border-radius: 15px;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.nav-links a:hover,
+.nav-links a:focus-visible {
+  background-color: #f3f4f6;
+  outline: none;
+}
+
+.dashboard-layout {
+  display: flex;
+  align-items: stretch;
+  min-height: calc(100vh - 57px);
+}
+
+.dashboard-sidebar {
+  flex: 0 0 auto;
+}
+
+.dashboard-main {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.breadcrumb-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 8px 24px 0;
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.breadcrumb-bar a {
+  color: #9ca3af;
+  text-decoration: none;
+}
+
+.breadcrumb-bar a:hover,
+.breadcrumb-bar a:focus-visible {
+  color: #64748b;
+  outline: none;
+}
+
+.breadcrumb-bar a.current {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.breadcrumb-bar mat-icon {
+  width: 14px;
+  height: 14px;
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+.dashboard-content {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.dashboard-content > * {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .dashboard-layout {
+    flex-direction: column;
+  }
+
+  .dashboard-sidebar {
+    width: 100%;
+  }
+}
+
+@media (max-width: 720px) {
+  .header-toolbar {
+    height: auto;
+    min-height: 56px;
+    padding: 12px 16px 8px;
+  }
+
+  .breadcrumb-bar {
+    padding: 8px 16px 0;
+  }
+}

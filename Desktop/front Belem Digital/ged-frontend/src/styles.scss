@@ -12,24 +12,21 @@ body {
   font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
-.dashboard-layout {
-  display: flex;
-  align-items: flex-start;
-  min-height: calc(100vh - 88px);
-  background: #f5f7fa;
+.dashboard-content > router-outlet + * {
+  display: block;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
 }
 
-.dashboard-sidebar {
-  flex: 0 0 auto;
-  align-self: stretch;
-}
-
-.dashboard-layout > .ged-container {
+.dashboard-content .ged-container {
   display: flex;
   flex: 1;
   flex-direction: column;
   gap: 16px;
+  width: 100%;
   min-width: 0;
+  box-sizing: border-box;
   padding: 24px;
 }
 
@@ -350,17 +347,7 @@ body {
 }
 
 @media (max-width: 900px) {
-  .dashboard-layout {
-    flex-direction: column;
-  }
-
-  .dashboard-sidebar {
-    position: static;
-    flex-basis: auto;
-    width: 100%;
-  }
-
-  .dashboard-layout > .ged-container {
+  .dashboard-content .ged-container {
     padding: 20px 16px;
   }
 

@@ -1,12 +1,7 @@
 .ged-container {
   padding: 24px;
   background-color: #ffffff;
-  min-height: 100vh;
-}
-
-.storage-summary {
-  display: block;
-  margin-bottom: 24px;
+  min-height: 100%;
 }
 
 // Cabeçalho Interno
@@ -45,7 +40,7 @@
     }
 
     .detail-upload-dropzone {
-      width: 210px;
+      width: 206px;
     }
   }
 }
@@ -258,9 +253,9 @@
     color: #94a3b8;
     transition: color 0.2s;
     
-    &:hover.view { color: #16a34a; }
-    &:hover.download { color: #0284c7; }
-    &:hover.delete { color: #ef4444; }
+    &:hover.view { color: #109440; }
+    &:hover.download { color: #0783c2; }
+    &:hover.delete { color: #c51616; }
   }
 
   .action-btn.delete {

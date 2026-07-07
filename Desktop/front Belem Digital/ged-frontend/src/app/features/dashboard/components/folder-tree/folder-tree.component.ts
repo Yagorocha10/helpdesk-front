@@ -39,6 +39,7 @@ export class FolderTreeComponent implements OnChanges, OnDestroy {
   @Output() treeChanged = new EventEmitter<void>();
 
   @ViewChild('treeContainer') treeContainer?: ElementRef<HTMLElement>;
+  @ViewChild('contextMenuTrigger') contextMenuTrigger?: MatMenuTrigger;
 
   rootFolders: Folder[] = [];
   visibleNodes: FolderTreeNode[] = [];
@@ -51,6 +52,8 @@ export class FolderTreeComponent implements OnChanges, OnDestroy {
   activeNodeKey?: string;
   contextFolder?: Folder;
   isCollapsed = false;
+  contextMenuX = 0;
+  contextMenuY = 0;
 
   private readonly destroy$ = new Subject<void>();
 
@@ -136,7 +139,7 @@ export class FolderTreeComponent implements OnChanges, OnDestroy {
     this.documentService.viewDocument(node.file);
   }
 
-  openContextMenu(event: MouseEvent, node: FolderTreeNode, trigger: MatMenuTrigger): void {
+  openContextMenu(event: MouseEvent, node: FolderTreeNode): void {
     if (node.type !== 'folder') {
       return;
     }
@@ -144,7 +147,11 @@ export class FolderTreeComponent implements OnChanges, OnDestroy {
     event.preventDefault();
     event.stopPropagation();
     this.contextFolder = node.folder;
-    trigger.openMenu();
+    
+    this.contextMenuX = event.clientX;
+    this.contextMenuY = event.clientY;
+    
+    this.contextMenuTrigger?.openMenu();
   }
 
   createSubFolder(folder: Folder | undefined = this.contextFolder): void {

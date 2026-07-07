@@ -30,8 +30,6 @@
       [class.active]="isActive(node)"
       [class.loading]="isLoading(node)"
       [style.padding-left.px]="isCollapsed ? 0 : node.level * 16"
-      [matMenuTriggerFor]="folderContextMenu"
-      #contextMenuTrigger="matMenuTrigger"
       [attr.aria-level]="node.level + 1"
       [attr.aria-selected]="isSelected(node)"
       [attr.aria-expanded]="canExpand(node) ? isExpanded(node) : null"
@@ -40,7 +38,7 @@
       [appFolderDrop]="getDropFolderId(node)"
       [dropDisabled]="node.type !== 'folder'"
       (keydown)="onTreeKeydown($event, node)"
-      (contextmenu)="openContextMenu($event, node, contextMenuTrigger)">
+      (contextmenu)="openContextMenu($event, node)">
       <button
         type="button"
         mat-icon-button
@@ -74,6 +72,13 @@
       <span>Nenhuma pasta encontrada</span>
     </div>
   </cdk-virtual-scroll-viewport>
+  <button 
+    #contextMenuTrigger="matMenuTrigger" 
+    [matMenuTriggerFor]="folderContextMenu"
+    class="hidden-menu-trigger"
+    [style.left.px]="contextMenuX"
+    [style.top.px]="contextMenuY">
+  </button>
 </aside>
 
 <mat-menu #folderContextMenu="matMenu">

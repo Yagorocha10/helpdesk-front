@@ -57,9 +57,12 @@
         class="folder-node-btn"
         [class.selected]="isSelected(node)"
         (click)="selectNode(node)">
-        <mat-icon class="folder-icon" *ngIf="node.type === 'folder'">
-          {{ isExpanded(node) ? 'folder_open' : 'folder' }}
-        </mat-icon>
+        <img
+          *ngIf="node.type === 'folder'"
+          class="folder-icon"
+          [src]="isExpanded(node) ? 'assets/icons/folder-open-icon.svg' : 'assets/icons/folder-icon.svg'"
+          alt=""
+          aria-hidden="true">
         <mat-icon class="file-icon" *ngIf="node.type === 'file'">description</mat-icon>
         <span class="folder-name">{{ getNodeName(node) }}</span>
         <mat-icon *ngIf="isLoading(node)" class="loading-icon">sync</mat-icon>

@@ -41,6 +41,13 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
     this.uploadService.completed$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.loadFolders());
+
+    this.documentService.folderChanges$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.loadFolders();
+        this.updateBreadcrumb(this.selectedFolderId);
+      });
   }
 
   ngOnDestroy(): void {

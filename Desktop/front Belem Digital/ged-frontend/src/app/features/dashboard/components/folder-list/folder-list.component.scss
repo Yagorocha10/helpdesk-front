@@ -35,8 +35,10 @@
       align-items: center;
       justify-content: center;
 
-      mat-icon {
-        color: #1e293b;
+      .folder-icon-img {
+        width: 30px;
+        height: 30px;
+        display: block;
       }
     }
 

@@ -103,8 +103,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
           next: folder => {
             this.searchQuery = '';
             this.isSearching = false;
-            this.folders = [...this.folders, folder];
-            this.loadFolders();
+            this.folders = this.upsertFolder(this.folders, folder);
           },
           error: err => {
             console.error('Erro ao criar pasta:', err);
@@ -294,6 +293,16 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
     }
 
     this.loadFolders();
+  }
+
+  private upsertFolder(folders: Folder[], folder: Folder): Folder[] {
+    const existingIndex = folders.findIndex(item => String(item.id) === String(folder.id));
+
+    if (existingIndex < 0) {
+      return [...folders, folder];
+    }
+
+    return folders.map(item => String(item.id) === String(folder.id) ? folder : item);
   }
 
   private showError(message: string): void {

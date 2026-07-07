@@ -112,7 +112,6 @@
     background-color: #dbeafe;
     color: #2563eb;
 
-    .folder-icon,
     .file-icon,
     .folder-toggle-btn,
     .folder-node-btn {
@@ -174,15 +173,15 @@
   flex: 0 0 18px;
   width: 18px;
   height: 18px;
-  font-size: 18px;
 }
 
 .folder-icon {
-  color: #f0aa31;
+  display: block;
 }
 
 .file-icon {
   color: #64748b;
+  font-size: 18px;
 }
 
 .folder-name {

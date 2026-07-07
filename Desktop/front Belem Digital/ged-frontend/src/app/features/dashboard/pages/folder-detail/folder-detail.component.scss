@@ -159,7 +159,12 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      mat-icon { color: #1e293b; font-size: 18px; width: 18px; height: 18px; }
+
+      .folder-icon-img {
+        width: 24px;
+        height: 24px;
+        display: block;
+      }
     }
 
     .folder-title-block .folder-title {

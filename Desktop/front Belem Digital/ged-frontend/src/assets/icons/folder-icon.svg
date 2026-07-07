@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 52" role="img" aria-label="Pasta">
+  <defs>
+    <linearGradient id="tab" x1="8" y1="8" x2="35" y2="31" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFE59A"/>
+      <stop offset="1" stop-color="#F6B641"/>
+    </linearGradient>
+    <linearGradient id="body" x1="7" y1="16" x2="58" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFD65B"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+    <linearGradient id="front" x1="9" y1="26" x2="55" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFC94A"/>
+      <stop offset="1" stop-color="#E88906"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#tab)" d="M6 13.5A5.5 5.5 0 0 1 11.5 8h13.8c1.7 0 3.3.8 4.4 2.1l3.5 4.4H52a6 6 0 0 1 6 6v4H6v-11Z"/>
+  <path fill="url(#body)" d="M6 19.5A5.5 5.5 0 0 1 11.5 14h41A5.5 5.5 0 0 1 58 19.5V43a6 6 0 0 1-6 6H12a6 6 0 0 1-6-6V19.5Z"/>
+  <path fill="url(#front)" d="M4.7 27.4A5.5 5.5 0 0 1 10.1 23h47.3a3 3 0 0 1 2.9 3.7l-4 17.8A6 6 0 0 1 50.5 49H11.4a6 6 0 0 1-5.8-7.4l-.9-14.2Z"/>
+  <path fill="#FFFFFF" fill-opacity=".28" d="M11 29c0-1.1.9-2 2-2h40c.6 0 1 .4 1 1s-.4 1-1 1H13a2 2 0 0 0-2 2c0 .6-.4 1-1 1s-1-.4-1-1v-2Z"/>
+  <path fill="#9A5B00" fill-opacity=".14" d="M6 22h52v3H6z"/>
+</svg>

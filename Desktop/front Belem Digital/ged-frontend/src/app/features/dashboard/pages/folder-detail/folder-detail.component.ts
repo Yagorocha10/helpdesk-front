@@ -56,6 +56,10 @@ export class FolderDetailComponent implements OnInit, OnDestroy {
           this.loadData();
         }
       });
+
+    this.documentService.folderChanges$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.loadData());
   }
 
   ngOnDestroy(): void {
@@ -101,11 +105,11 @@ export class FolderDetailComponent implements OnInit, OnDestroy {
     this.documentService.addFolder(subFolderName, this.folderId).pipe(
       finalize(() => this.isCreatingSubFolder = false)
     ).subscribe({
-      next: () => {
+      next: createdFolder => {
         this.newSubFolderName = '';
         this.showSubFolderInput = false;
         this.subFolderMessage = '';
-        this.loadData();
+        this.subFolders = this.upsertFolder(this.subFolders, createdFolder);
       },
       error: err => {
         console.error('Erro ao criar subpasta:', err);
@@ -231,5 +235,15 @@ export class FolderDetailComponent implements OnInit, OnDestroy {
 
   private showError(message: string): void {
     this.snackBar.open(message, 'Fechar', { duration: 5000 });
+  }
+
+  private upsertFolder(folders: Folder[], folder: Folder): Folder[] {
+    const existingIndex = folders.findIndex(item => String(item.id) === String(folder.id));
+
+    if (existingIndex < 0) {
+      return [...folders, folder];
+    }
+
+    return folders.map(item => String(item.id) === String(folder.id) ? folder : item);
   }
 }

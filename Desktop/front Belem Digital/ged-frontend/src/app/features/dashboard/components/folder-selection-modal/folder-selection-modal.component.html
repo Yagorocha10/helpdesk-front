@@ -42,7 +42,11 @@
         aria-hidden="true">
         <mat-icon>{{ isLoadingFolder(node.folder) ? 'sync' : isExpanded(node.folder) ? 'expand_more' : 'chevron_right' }}</mat-icon>
       </span>
-      <mat-icon class="folder-icon">{{ isExpanded(node.folder) ? 'folder_open' : 'folder' }}</mat-icon>
+      <img
+        class="folder-icon"
+        [src]="isExpanded(node.folder) ? 'assets/icons/folder-open-icon.svg' : 'assets/icons/folder-icon.svg'"
+        alt=""
+        aria-hidden="true">
       <span class="folder-name">{{ formatFolderName(node.folder.name) }}</span>
     </button>
   </div>

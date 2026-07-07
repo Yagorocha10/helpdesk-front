@@ -34,7 +34,10 @@ export class DocumentService {
   private readonly foldersUrl = `${environment.apiUrl}/folders`;
   private readonly documentsUrl = `${environment.apiUrl}/documents`;
   private readonly storageRefreshSubject = new Subject<void>();
+  private readonly folderChangesSubject = new Subject<void>();
+  private readonly folderCache = new Map<number, Folder>();
   readonly storageRefresh$ = this.storageRefreshSubject.asObservable();
+  readonly folderChanges$ = this.folderChangesSubject.asObservable();
 
   constructor(private http: HttpClient) {}
 
@@ -61,6 +64,20 @@ export class DocumentService {
     );
   }
 
+  getFolderBreadcrumb(folderId: number): Observable<Folder[]> {
+    return this.getFolderForBreadcrumb(folderId).pipe(
+      switchMap(folder => {
+        if (!folder.parentId) {
+          return of([folder]);
+        }
+
+        return this.getFolderBreadcrumb(folder.parentId).pipe(
+          map(parentFolders => [...parentFolders, folder])
+        );
+      })
+    );
+  }
+
   addFolder(name: string, parentId: number | null = null): Observable<Folder> {
     const payload: { nome: string; parentId?: number } = { nome: name.trim() };
 
@@ -69,32 +86,39 @@ export class DocumentService {
     }
 
     return this.http.post<FolderResponseDTO>(this.foldersUrl, payload).pipe(
-      map(folder => this.mapFolder(folder))
+      map(folder => this.mapFolder(folder)),
+      tap(() => this.notifyFoldersChanged())
     );
   }
 
   renameFolder(folderId: number, name: string): Observable<Folder> {
-    return this.getFolderById(folderId).pipe(
+    return this.getFolderForBreadcrumb(folderId).pipe(
       switchMap(folder => this.http.patch<FolderResponseDTO>(`${this.foldersUrl}/${folderId}`, {
         nome: name.trim(),
-        parentId: folder?.parentId ?? null
+        parentId: folder.parentId ?? null
       })),
-      map(updatedFolder => this.mapFolder(updatedFolder))
+      map(folder => this.mapFolder(folder)),
+      tap(() => this.notifyFoldersChanged())
     );
   }
 
   moveFolder(folder: Folder, parentId: number | null): Observable<Folder> {
     return this.http.patch<FolderResponseDTO>(`${this.foldersUrl}/${folder.id}`, {
-      nome: folder.name.trim(),
+      nome: folder.name,
       parentId
     }).pipe(
-      map(updatedFolder => this.mapFolder(updatedFolder))
+      map(updatedFolder => this.mapFolder(updatedFolder)),
+      tap(() => this.notifyFoldersChanged())
     );
   }
 
   deleteFolder(folderId: number): Observable<void> {
     return this.http.delete<void>(`${this.foldersUrl}/${folderId}`).pipe(
-      tap(() => this.notifyStorageChanged())
+      tap(() => {
+        this.folderCache.delete(folderId);
+        this.notifyFoldersChanged();
+        this.notifyStorageChanged();
+      })
     );
   }
 
@@ -161,12 +185,28 @@ export class DocumentService {
     return this.http.get<DocumentResponseDTO[]>(this.documentsUrl);
   }
 
+  private getFolderForBreadcrumb(folderId: number): Observable<Folder> {
+    const cachedFolder = this.folderCache.get(folderId);
+
+    if (cachedFolder) {
+      return of(cachedFolder);
+    }
+
+    return this.http.get<FolderResponseDTO>(`${this.foldersUrl}/${folderId}`).pipe(
+      map(folder => this.mapFolder(folder))
+    );
+  }
+
   private getDocumentsByFolderRaw(folderId: number): Observable<DocumentResponseDTO[]> {
     return this.http.get<DocumentResponseDTO[]>(`${this.foldersUrl}/${folderId}/documents`);
   }
 
   private notifyStorageChanged(): void {
     this.storageRefreshSubject.next();
+  }
+
+  private notifyFoldersChanged(): void {
+    this.folderChangesSubject.next();
   }
 
   private mapFolder(
@@ -179,7 +219,7 @@ export class DocumentService {
     const children = folder.children?.map(child => this.mapFolder(child, documents, folder.id));
     const files = folderDocuments.map(doc => this.mapDocument(doc));
 
-    return {
+    const mappedFolder = {
       id: folder.id,
       name: folder.nome,
       fileCount: files.length || fileCount,
@@ -188,6 +228,10 @@ export class DocumentService {
       files,
       createdAt: folder.dataCriacao
     };
+
+    this.folderCache.set(mappedFolder.id, mappedFolder);
+
+    return mappedFolder;
   }
 
   private filterFoldersByParent(folders: Folder[], parentId: number | null): Folder[] {

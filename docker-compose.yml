@@ -1,0 +1,10 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ged-frontend:latest
+    container_name: ged-frontend
+    ports:
+      - "4200:80"
+    restart: unless-stopped

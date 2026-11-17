@@ -20,10 +20,10 @@ describe('AppComponent', () => {
     expect(app.title).toEqual('ged-frontend');
   });
 
-  it('should render title', () => {
+  it('should render the routed application view', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.content span')?.textContent).toContain('ged-frontend app is running!');
+    expect(compiled.querySelector('router-outlet')).toBeTruthy();
   });
 });

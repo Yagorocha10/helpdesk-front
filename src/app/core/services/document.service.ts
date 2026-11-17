@@ -128,6 +128,12 @@ export class DocumentService {
     );
   }
 
+  getDocuments(): Observable<DocumentFile[]> {
+    return this.getAllDocumentsRaw().pipe(
+      map(documents => documents.map(doc => this.mapDocument(doc)))
+    );
+  }
+
   uploadDocument(folderId: number, file: File): Observable<DocumentFile> {
     const formData = new FormData();
     formData.append('file', file);

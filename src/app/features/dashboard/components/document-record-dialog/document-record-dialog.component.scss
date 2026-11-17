@@ -1,0 +1,29 @@
+.document-name {
+  margin: 0 0 16px;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.unavailable-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  font-size: 14px;
+  line-height: 1.5;
+
+  mat-icon {
+    flex: 0 0 auto;
+    color: #2563eb;
+  }
+
+  p {
+    margin: 0;
+  }
+}

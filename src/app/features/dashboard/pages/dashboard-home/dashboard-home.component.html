@@ -5,6 +5,13 @@
     </div>
   </div>
 
+  <app-dashboard-overview
+    [folders]="folders"
+    [documents]="documents"
+    [documentsError]="documentsOverviewError"
+    [foldersError]="foldersOverviewError">
+  </app-dashboard-overview>
+
   <div class="toolbar-row">
     <div class="search-container">
       <mat-form-field appearance="outline" class="search-field">
@@ -157,6 +164,12 @@
             </button>
             <button type="button" mat-icon-button color="accent" title="Baixar" (click)="$event.stopPropagation(); downloadFile(doc)">
               <mat-icon>download</mat-icon>
+            </button>
+            <button type="button" mat-icon-button title="Histórico de versões" aria-label="Histórico de versões" (click)="$event.stopPropagation(); openDocumentRecord(doc, 'versions')">
+              <mat-icon>history</mat-icon>
+            </button>
+            <button type="button" mat-icon-button title="Atividades do arquivo" aria-label="Atividades do arquivo" (click)="$event.stopPropagation(); openDocumentRecord(doc, 'activities')">
+              <mat-icon>list_alt</mat-icon>
             </button>
             <button
               type="button"

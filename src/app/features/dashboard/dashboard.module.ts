@@ -5,9 +5,9 @@ import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 
-import { FolderListComponent } from './components/folder-list/folder-list.component';
 import { SharedModule } from '../../shared/shared.module';
 import { DashboardHomeComponent } from './pages/dashboard-home/dashboard-home.component';
+import { DashboardOverviewComponent } from './components/dashboard-overview/dashboard-overview.component';
 import { FolderDetailComponent } from './pages/folder-detail/folder-detail.component';
 import { CreateFolderDialogComponent } from './components/create-folder-dialog/create-folder-dialog.component';
 import { FolderTreeComponent } from './components/folder-tree/folder-tree.component';
@@ -19,13 +19,14 @@ import { TextInputDialogComponent } from './components/text-input-dialog/text-in
 import { UploadDropzoneComponent } from './components/upload-dropzone/upload-dropzone.component';
 import { UploadProgressComponent } from './components/upload-progress/upload-progress.component';
 import { FolderDropDirective } from './directives/folder-drop.directive';
+import { DocumentRecordDialogComponent } from './components/document-record-dialog/document-record-dialog.component';
 
 @NgModule({
   declarations: [
-    FolderListComponent,
     DashboardLayoutComponent,
     FolderTreeComponent,
     DashboardHomeComponent,
+    DashboardOverviewComponent,
     FolderDetailComponent,
     CreateFolderDialogComponent,
     StorageCardComponent,
@@ -34,7 +35,8 @@ import { FolderDropDirective } from './directives/folder-drop.directive';
     UploadProgressComponent,
     FolderSelectionModalComponent,
     TextInputDialogComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    DocumentRecordDialogComponent
   ],
   imports: [
     CommonModule,

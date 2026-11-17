@@ -1,0 +1,13 @@
+<h2 mat-dialog-title>{{ title }}</h2>
+
+<mat-dialog-content>
+  <p class="document-name">{{ data.documentName }}</p>
+  <div class="unavailable-message" role="status">
+    <mat-icon>info</mat-icon>
+    <p>{{ unavailableMessage }}</p>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button type="button" mat-button mat-dialog-close>Fechar</button>
+</mat-dialog-actions>

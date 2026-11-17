@@ -7,6 +7,7 @@ import { DocumentFile } from '../../../../core/models/document-file.model';
 import { Folder } from '../../../../core/models/folder.model';
 import { DocumentService } from '../../../../core/services/document.service';
 import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
+import { DocumentRecordDialogComponent, DocumentRecordType } from '../../components/document-record-dialog/document-record-dialog.component';
 import { UploadContextService } from '../../services/upload-context.service';
 import { UploadService } from '../../services/upload.service';
 
@@ -194,6 +195,14 @@ export class FolderDetailComponent implements OnInit, OnDestroy {
       console.error('Erro ao visualizar arquivo:', err);
       this.showError('Nao foi possivel visualizar o arquivo.');
     }
+  }
+
+  openDocumentRecord(doc: DocumentFile, type: DocumentRecordType): void {
+    this.dialog.open(DocumentRecordDialogComponent, {
+      width: '480px',
+      maxWidth: 'calc(100vw - 32px)',
+      data: { type, documentName: doc.name }
+    });
   }
 
   deleteFile(event: Event, doc: DocumentFile): void {

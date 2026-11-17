@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { Subject, filter, finalize, switchMap, takeUntil } from 'rxjs';
+import { Subject, catchError, filter, finalize, forkJoin, of, switchMap, takeUntil } from 'rxjs';
 import { DocumentFile } from 'src/app/core/models/document-file.model';
 import { Folder } from 'src/app/core/models/folder.model';
 import { SearchResult } from 'src/app/core/models/search-result.model';
@@ -12,6 +12,7 @@ import { CreateFolderDialogComponent } from '../../components/create-folder-dial
 import { FolderSelectionModalComponent } from '../../components/folder-selection-modal/folder-selection-modal.component';
 import { TextInputDialogComponent } from '../../components/text-input-dialog/text-input-dialog.component';
 import { UploadService } from '../../services/upload.service';
+import { DocumentRecordDialogComponent, DocumentRecordType } from '../../components/document-record-dialog/document-record-dialog.component';
 
 @Component({
   selector: 'app-dashboard-home',
@@ -25,6 +26,9 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   isSearching = false;
   deletingFolderIds = new Set<number>();
   deletingDocumentIds = new Set<number>();
+  documents: DocumentFile[] = [];
+  documentsOverviewError = false;
+  foldersOverviewError = false;
 
   private readonly destroy$ = new Subject<void>();
 
@@ -37,7 +41,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.loadFolders();
+    this.loadOverview();
     this.uploadService.completed$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.refreshAfterFolderAction());
@@ -57,6 +61,49 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
         console.error('Erro ao carregar pastas:', err);
         this.showError('Nao foi possivel carregar as pastas.');
       }
+    });
+  }
+
+  loadOverview(): void {
+    this.documentsOverviewError = false;
+    this.foldersOverviewError = false;
+    forkJoin({
+      folders: this.documentService.getFolders(null).pipe(catchError(err => {
+        console.error('Erro ao carregar pastas para os indicadores:', err);
+        return of(null);
+      })),
+      documents: this.documentService.getDocuments().pipe(catchError(err => {
+        console.error('Erro ao carregar documentos para os indicadores:', err);
+        return of(null);
+      }))
+    }).pipe(takeUntil(this.destroy$)).subscribe({
+      next: ({ folders, documents }) => {
+        if (folders) {
+          this.folders = [...folders];
+        } else {
+          this.foldersOverviewError = true;
+          this.showError('Nao foi possivel carregar as pastas.');
+        }
+        if (documents) {
+          this.documents = documents;
+        } else {
+          this.documentsOverviewError = true;
+          this.documents = [];
+        }
+      },
+      error: err => {
+        console.error('Erro ao carregar indicadores do dashboard:', err);
+        this.documentsOverviewError = true;
+        this.foldersOverviewError = true;
+      }
+    });
+  }
+
+  openDocumentRecord(doc: DocumentFile, type: DocumentRecordType): void {
+    this.dialog.open(DocumentRecordDialogComponent, {
+      width: '480px',
+      maxWidth: 'calc(100vw - 32px)',
+      data: { type, documentName: doc.name }
     });
   }
 
@@ -104,6 +151,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
             this.searchQuery = '';
             this.isSearching = false;
             this.folders = this.upsertFolder(this.folders, folder);
+            this.loadOverview();
           },
           error: err => {
             console.error('Erro ao criar pasta:', err);
@@ -269,7 +317,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
           folders: this.searchResults.folders,
           documents: this.searchResults.documents.filter(item => String(item.id) !== String(docId))
         };
-        this.loadFolders();
+        this.loadOverview();
       },
       error: err => {
         console.error('Erro ao excluir arquivo:', err);
@@ -287,12 +335,10 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   }
 
   private refreshAfterFolderAction(): void {
+    this.loadOverview();
     if (this.isSearching && this.searchQuery.trim()) {
       this.onSearch();
-      return;
     }
-
-    this.loadFolders();
   }
 
   private upsertFolder(folders: Folder[], folder: Folder): Folder[] {
